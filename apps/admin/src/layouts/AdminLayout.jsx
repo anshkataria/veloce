@@ -5,10 +5,12 @@ import {
   ShoppingBag,
   LogOut,
   Store,
+  Sun,
+  Moon,
   Menu,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -17,100 +19,276 @@ const navItems = [
 ];
 
 export default function AdminLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [dark, setDark] = useState(
+    () => localStorage.getItem("admin-theme") === "dark",
+  );
+  const [mobileOpen, setMobile] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // TODO: clear auth token
-    navigate("/login");
-  };
+  useEffect(() => {
+    document.documentElement.setAttribute(
+      "data-theme",
+      dark ? "dark" : "light",
+    );
+    localStorage.setItem("admin-theme", dark ? "dark" : "light");
+  }, [dark]);
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div style={{ display: "flex", minHeight: "100vh" }}>
       {/* ── SIDEBAR ── */}
       <aside
-        className={`
-        fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-gray-100
-        flex flex-col transition-transform duration-300
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:relative lg:translate-x-0
-      `}
+        style={{
+          width: "220px",
+          flexShrink: 0,
+          background: "var(--sidebar-bg)",
+          display: "flex",
+          flexDirection: "column",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          bottom: 0,
+          zIndex: 50,
+          transform: mobileOpen ? "translateX(0)" : undefined,
+          transition: "transform 0.3s",
+        }}
+        className={!mobileOpen ? "max-lg:hidden lg:flex" : "flex"}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <Store size={18} className="text-gray-700" />
-            <span className="text-sm font-semibold tracking-widest uppercase text-gray-900">
-              Admin
+        <div
+          style={{
+            padding: "24px 20px",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div
+              style={{
+                width: "30px",
+                height: "30px",
+                background: "rgba(255,255,255,0.1)",
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Store size={15} color="white" />
+            </div>
+            <span
+              style={{
+                color: "white",
+                fontWeight: 600,
+                fontSize: "13px",
+                letterSpacing: "0.05em",
+              }}
+            >
+              STORE ADMIN
             </span>
           </div>
           <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-gray-400 hover:text-gray-900"
+            onClick={() => setMobile(false)}
+            className="lg:hidden"
+            style={{ color: "var(--sidebar-text)" }}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
-        {/* Nav links */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: "12px 10px" }}>
+          <p
+            style={{
+              color: "var(--sidebar-text)",
+              fontSize: "10px",
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              padding: "8px 10px 6px",
+              textTransform: "uppercase",
+            }}
+          >
+            Menu
+          </p>
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-                  isActive
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-                }`
-              }
+              style={({ isActive }) => ({
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "9px 10px",
+                borderRadius: "8px",
+                marginBottom: "2px",
+                color: isActive
+                  ? "var(--sidebar-active)"
+                  : "var(--sidebar-text)",
+                background: isActive
+                  ? "var(--sidebar-active-bg)"
+                  : "transparent",
+                textDecoration: "none",
+                fontSize: "13px",
+                fontWeight: isActive ? 500 : 400,
+                transition: "all 0.15s",
+              })}
             >
-              <Icon size={16} />
+              <Icon size={15} />
               {label}
             </NavLink>
           ))}
         </nav>
 
-        {/* Logout */}
-        <div className="px-3 py-4 border-t border-gray-100">
+        {/* Bottom */}
+        <div
+          style={{
+            padding: "12px 10px",
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "2px",
+          }}
+        >
+          {/* Dark mode toggle */}
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-500
-                       hover:bg-gray-50 hover:text-gray-900 transition-colors w-full"
+            onClick={() => setDark((d) => !d)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "9px 10px",
+              borderRadius: "8px",
+              width: "100%",
+              color: "var(--sidebar-text)",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "13px",
+            }}
           >
-            <LogOut size={16} />
+            <span
+              style={{ display: "flex", alignItems: "center", gap: "10px" }}
+            >
+              {dark ? <Sun size={15} /> : <Moon size={15} />}
+              {dark ? "Light mode" : "Dark mode"}
+            </span>
+            {/* Toggle pill */}
+            <div
+              style={{
+                width: "32px",
+                height: "18px",
+                borderRadius: "9px",
+                background: dark ? "#4ade80" : "rgba(255,255,255,0.15)",
+                position: "relative",
+                transition: "background 0.3s",
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: "3px",
+                  left: dark ? "17px" : "3px",
+                  width: "12px",
+                  height: "12px",
+                  borderRadius: "50%",
+                  background: "white",
+                  transition: "left 0.3s",
+                }}
+              />
+            </div>
+          </button>
+
+          <button
+            onClick={() => navigate("/login")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "9px 10px",
+              borderRadius: "8px",
+              width: "100%",
+              color: "var(--sidebar-text)",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "13px",
+            }}
+          >
+            <LogOut size={15} />
             Logout
           </button>
         </div>
       </aside>
 
       {/* Mobile overlay */}
-      {sidebarOpen && (
+      {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={() => setMobile(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 40,
+          }}
         />
       )}
 
-      {/* ── MAIN CONTENT ── */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
-        <header className="h-16 bg-white border-b border-gray-100 flex items-center px-6 gap-4">
+      {/* ── MAIN ── */}
+      <div
+        style={{
+          marginLeft: "220px",
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
+        }}
+        className="max-lg:ml-0"
+      >
+        {/* Topbar */}
+        <header
+          style={{
+            height: "60px",
+            background: "var(--bg-card)",
+            borderBottom: "1px solid var(--border)",
+            display: "flex",
+            alignItems: "center",
+            padding: "0 24px",
+            gap: "12px",
+            position: "sticky",
+            top: 0,
+            zIndex: 30,
+          }}
+        >
           <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-gray-500 hover:text-gray-900"
+            onClick={() => setMobile(true)}
+            className="lg:hidden"
+            style={{ color: "var(--text-secondary)" }}
           >
             <Menu size={20} />
           </button>
-          <div className="flex-1" />
-          <div className="text-sm text-gray-500">
-            Welcome, <span className="font-medium text-gray-900">Admin</span>
+          <div style={{ flex: 1 }} />
+          <div
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              background: "var(--bg-input)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "12px",
+              fontWeight: 600,
+              color: "var(--text-secondary)",
+            }}
+          >
+            A
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 p-6 overflow-auto">
+        {/* Content */}
+        <main style={{ flex: 1, padding: "28px 28px", overflowY: "auto" }}>
           <Outlet />
         </main>
       </div>
