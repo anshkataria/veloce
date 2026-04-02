@@ -22,7 +22,8 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             to="/"
-            className="text-xl font-semibold tracking-widest uppercase text-gray-900"
+            style={{ fontFamily: "var(--font-display)" }}
+            className="text-2xl font-light tracking-[0.3em] uppercase text-gray-900"
           >
             Store
           </Link>
