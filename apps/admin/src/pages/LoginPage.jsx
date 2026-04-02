@@ -9,7 +9,6 @@ export default function LoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: connect to backend
     if (form.email === "admin@store.com" && form.password === "admin123") {
       navigate("/dashboard");
     } else {
@@ -17,22 +16,91 @@ export default function LoginPage() {
     }
   };
 
+  const inputStyle = {
+    width: "100%",
+    padding: "10px 14px",
+    borderRadius: "9px",
+    border: "1px solid var(--border)",
+    background: "var(--bg-input)",
+    color: "var(--text-primary)",
+    fontSize: "13px",
+    outline: "none",
+    fontFamily: "var(--font-main)",
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl border border-gray-100 w-full max-w-sm p-8 space-y-6">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-900 rounded-2xl mb-4">
-            <Store size={20} className="text-white" />
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "var(--bg-main)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px",
+      }}
+    >
+      <div
+        style={{
+          background: "var(--bg-card)",
+          border: "1px solid var(--border)",
+          borderRadius: "18px",
+          width: "100%",
+          maxWidth: "380px",
+          padding: "36px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "20px",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              width: "44px",
+              height: "44px",
+              background: "var(--text-primary)",
+              borderRadius: "12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+            }}
+          >
+            <Store size={20} color="var(--bg-card)" />
           </div>
-          <h1 className="text-xl font-semibold text-gray-900">Admin Login</h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <h1
+            style={{
+              fontSize: "18px",
+              fontWeight: 600,
+              color: "var(--text-primary)",
+            }}
+          >
+            Admin Login
+          </h1>
+          <p
+            style={{
+              fontSize: "13px",
+              color: "var(--text-muted)",
+              marginTop: "4px",
+            }}
+          >
             Sign in to manage your store
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+        >
           {error && (
-            <div className="bg-rose-50 text-rose-600 text-sm px-4 py-3 rounded-xl">
+            <div
+              style={{
+                background: "var(--danger-bg)",
+                color: "var(--danger)",
+                fontSize: "13px",
+                padding: "10px 14px",
+                borderRadius: "9px",
+              }}
+            >
               {error}
             </div>
           )}
@@ -50,35 +118,60 @@ export default function LoginPage() {
               type: "password",
               placeholder: "••••••••",
             },
-          ].map((field) => (
-            <div key={field.name}>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5 uppercase tracking-wide">
-                {field.label}
+          ].map((f) => (
+            <div key={f.name}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  marginBottom: "6px",
+                }}
+              >
+                {f.label}
               </label>
               <input
-                type={field.type}
-                value={form[field.name]}
+                type={f.type}
+                value={form[f.name]}
+                placeholder={f.placeholder}
                 onChange={(e) =>
-                  setForm((f) => ({ ...f, [field.name]: e.target.value }))
+                  setForm((p) => ({ ...p, [f.name]: e.target.value }))
                 }
-                placeholder={field.placeholder}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm
-                           focus:outline-none focus:ring-1 focus:ring-gray-400"
+                style={inputStyle}
               />
             </div>
           ))}
 
           <button
             type="submit"
-            className="w-full bg-gray-900 text-white py-3 rounded-xl text-sm font-medium
-                       hover:bg-gray-700 transition-colors mt-2"
+            style={{
+              padding: "11px",
+              borderRadius: "9px",
+              border: "none",
+              background: "var(--accent)",
+              color: "var(--accent-fg)",
+              fontSize: "13px",
+              fontWeight: 500,
+              cursor: "pointer",
+              fontFamily: "var(--font-main)",
+              marginTop: "4px",
+            }}
           >
             Sign In
           </button>
         </form>
 
-        <p className="text-center text-xs text-gray-400">
-          Use admin@store.com / admin123
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: "12px",
+            color: "var(--text-muted)",
+          }}
+        >
+          admin@store.com / admin123
         </p>
       </div>
     </div>

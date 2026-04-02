@@ -54,10 +54,29 @@ const initialProducts = [
 
 const emptyForm = { name: "", category: "suits", price: "", stock: "" };
 
+const card = {
+  background: "var(--bg-card)",
+  border: "1px solid var(--border)",
+  borderRadius: "14px",
+  overflow: "hidden",
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "9px 12px",
+  borderRadius: "8px",
+  border: "1px solid var(--border)",
+  background: "var(--bg-input)",
+  color: "var(--text-primary)",
+  fontSize: "13px",
+  outline: "none",
+  fontFamily: "var(--font-main)",
+};
+
 export default function ProductsPage() {
   const [products, setProducts] = useState(initialProducts);
   const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null); // null = adding new
+  const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [deleteId, setDeleteId] = useState(null);
 
@@ -66,14 +85,13 @@ export default function ProductsPage() {
     setForm(emptyForm);
     setShowModal(true);
   };
-
-  const openEdit = (product) => {
-    setEditing(product.id);
+  const openEdit = (p) => {
+    setEditing(p.id);
     setForm({
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      stock: product.stock,
+      name: p.name,
+      category: p.category,
+      price: p.price,
+      stock: p.stock,
     });
     setShowModal(true);
   };
@@ -95,14 +113,16 @@ export default function ProductsPage() {
         ),
       );
     } else {
-      const newProduct = {
-        id: Date.now(),
-        ...form,
-        price: Number(form.price),
-        stock: Number(form.stock),
-        inStock: Number(form.stock) > 0,
-      };
-      setProducts((ps) => [newProduct, ...ps]);
+      setProducts((ps) => [
+        {
+          id: Date.now(),
+          ...form,
+          price: Number(form.price),
+          stock: Number(form.stock),
+          inStock: Number(form.stock) > 0,
+        },
+        ...ps,
+      ]);
     }
     setShowModal(false);
   };
@@ -112,30 +132,70 @@ export default function ProductsPage() {
     setDeleteId(null);
   };
 
+  const STATUS = (inStock) =>
+    inStock
+      ? { color: "var(--success)", bg: "var(--success-bg)", label: "In Stock" }
+      : {
+          color: "var(--danger)",
+          bg: "var(--danger-bg)",
+          label: "Out of Stock",
+        };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Products</h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <h1
+            style={{
+              fontSize: "20px",
+              fontWeight: 600,
+              color: "var(--text-primary)",
+            }}
+          >
+            Products
+          </h1>
+          <p
+            style={{
+              color: "var(--text-muted)",
+              fontSize: "13px",
+              marginTop: "2px",
+            }}
+          >
             {products.length} total products
           </p>
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-700 transition-colors"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: "9px 16px",
+            borderRadius: "9px",
+            background: "var(--accent)",
+            color: "var(--accent-fg)",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "13px",
+            fontWeight: 500,
+            fontFamily: "var(--font-main)",
+          }}
         >
-          <Plus size={15} /> Add Product
+          <Plus size={14} /> Add Product
         </button>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      <div style={card}>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr className="border-b border-gray-100">
+              <tr style={{ borderBottom: "1px solid var(--border)" }}>
                 {[
                   "Name",
                   "Category",
@@ -146,78 +206,178 @@ export default function ProductsPage() {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="text-left text-xs font-medium text-gray-400 uppercase tracking-wide px-6 py-3"
+                    style={{
+                      textAlign: "left",
+                      padding: "10px 20px",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                    }}
                   >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
-              {products.map((product) => (
-                <tr
-                  key={product.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                    {product.name}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 capitalize">
-                    {product.category}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                    ₹{product.price.toLocaleString("en-IN")}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {product.stock}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                        product.inStock
-                          ? "bg-green-50 text-green-700"
-                          : "bg-rose-50 text-rose-600"
-                      }`}
+            <tbody>
+              {products.map((p, i) => {
+                const s = STATUS(p.inStock);
+                return (
+                  <tr
+                    key={p.id}
+                    style={{
+                      borderBottom:
+                        i < products.length - 1
+                          ? "1px solid var(--border)"
+                          : "none",
+                    }}
+                  >
+                    <td
+                      style={{
+                        padding: "13px 20px",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: "var(--text-primary)",
+                      }}
                     >
-                      {product.inStock ? "In Stock" : "Out of Stock"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => openEdit(product)}
-                        className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                      {p.name}
+                    </td>
+                    <td
+                      style={{
+                        padding: "13px 20px",
+                        fontSize: "13px",
+                        color: "var(--text-secondary)",
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {p.category}
+                    </td>
+                    <td
+                      style={{
+                        padding: "13px 20px",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      ₹{p.price.toLocaleString("en-IN")}
+                    </td>
+                    <td
+                      style={{
+                        padding: "13px 20px",
+                        fontSize: "13px",
+                        color: "var(--text-secondary)",
+                        fontFamily: "var(--font-mono)",
+                      }}
+                    >
+                      {p.stock}
+                    </td>
+                    <td style={{ padding: "13px 20px" }}>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          padding: "3px 10px",
+                          borderRadius: "20px",
+                          color: s.color,
+                          background: s.bg,
+                        }}
                       >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        onClick={() => setDeleteId(product.id)}
-                        className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {s.label}
+                      </span>
+                    </td>
+                    <td style={{ padding: "13px 20px" }}>
+                      <div style={{ display: "flex", gap: "4px" }}>
+                        <button
+                          onClick={() => openEdit(p)}
+                          style={{
+                            padding: "5px",
+                            borderRadius: "6px",
+                            border: "none",
+                            background: "transparent",
+                            cursor: "pointer",
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          onClick={() => setDeleteId(p.id)}
+                          style={{
+                            padding: "5px",
+                            borderRadius: "6px",
+                            border: "none",
+                            background: "transparent",
+                            cursor: "pointer",
+                            color: "var(--text-muted)",
+                          }}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Add / Edit Modal */}
+      {/* Add/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-900">
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+          }}
+        >
+          <div
+            style={{
+              background: "var(--bg-card)",
+              borderRadius: "16px",
+              width: "100%",
+              maxWidth: "420px",
+              padding: "24px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <h2
+                style={{
+                  fontSize: "15px",
+                  fontWeight: 600,
+                  color: "var(--text-primary)",
+                }}
+              >
                 {editing ? "Edit Product" : "Add Product"}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-900"
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  color: "var(--text-muted)",
+                }}
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
@@ -225,25 +385,44 @@ export default function ProductsPage() {
               { label: "Product Name", key: "name", type: "text" },
               { label: "Price (₹)", key: "price", type: "number" },
               { label: "Stock", key: "stock", type: "number" },
-            ].map((field) => (
-              <div key={field.key}>
-                <label className="block text-xs font-medium text-gray-700 mb-1.5 uppercase tracking-wide">
-                  {field.label}
+            ].map((f) => (
+              <div key={f.key}>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "var(--text-muted)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    marginBottom: "6px",
+                  }}
+                >
+                  {f.label}
                 </label>
                 <input
-                  type={field.type}
-                  value={form[field.key]}
+                  type={f.type}
+                  value={form[f.key]}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, [field.key]: e.target.value }))
+                    setForm((prev) => ({ ...prev, [f.key]: e.target.value }))
                   }
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm
-                             focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  style={inputStyle}
                 />
               </div>
             ))}
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5 uppercase tracking-wide">
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  marginBottom: "6px",
+                }}
+              >
                 Category
               </label>
               <select
@@ -251,8 +430,7 @@ export default function ProductsPage() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, category: e.target.value }))
                 }
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm
-                           focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white"
+                style={inputStyle}
               >
                 {["suits", "sets", "dupattas"].map((c) => (
                   <option key={c} value={c}>
@@ -262,45 +440,118 @@ export default function ProductsPage() {
               </select>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 border border-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "9px",
+                  border: "1px solid var(--border)",
+                  background: "transparent",
+                  color: "var(--text-secondary)",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontFamily: "var(--font-main)",
+                }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 bg-gray-900 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "9px",
+                  border: "none",
+                  background: "var(--accent)",
+                  color: "var(--accent-fg)",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  fontFamily: "var(--font-main)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                }}
               >
-                <Check size={15} />
-                {editing ? "Save Changes" : "Add Product"}
+                <Check size={14} /> {editing ? "Save" : "Add"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete confirmation */}
+      {/* Delete confirm */}
       {deleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 space-y-4">
-            <h2 className="text-base font-semibold text-gray-900">
-              Delete Product?
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+          }}
+        >
+          <div
+            style={{
+              background: "var(--bg-card)",
+              borderRadius: "16px",
+              width: "100%",
+              maxWidth: "360px",
+              padding: "24px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "15px",
+                fontWeight: 600,
+                color: "var(--text-primary)",
+              }}
+            >
+              Delete product?
             </h2>
-            <p className="text-sm text-gray-500">
-              This action cannot be undone.
+            <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
+              This cannot be undone.
             </p>
-            <div className="flex gap-3">
+            <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
               <button
                 onClick={() => setDeleteId(null)}
-                className="flex-1 border border-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "9px",
+                  border: "1px solid var(--border)",
+                  background: "transparent",
+                  color: "var(--text-secondary)",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontFamily: "var(--font-main)",
+                }}
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete(deleteId)}
-                className="flex-1 bg-rose-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-rose-700 transition-colors"
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "9px",
+                  border: "none",
+                  background: "var(--danger-bg)",
+                  color: "var(--danger)",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  fontFamily: "var(--font-main)",
+                }}
               >
                 Delete
               </button>

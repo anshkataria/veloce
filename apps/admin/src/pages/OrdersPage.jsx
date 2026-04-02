@@ -59,22 +59,27 @@ const initialOrders = [
 
 const STATUSES = ["Processing", "Shipped", "Delivered", "Cancelled"];
 
-const STATUS_STYLES = {
-  Delivered: "bg-green-50 text-green-700",
-  Shipped: "bg-blue-50 text-blue-700",
-  Processing: "bg-amber-50 text-amber-700",
-  Cancelled: "bg-rose-50 text-rose-600",
+const STATUS = {
+  Delivered: { color: "var(--success)", bg: "var(--success-bg)" },
+  Shipped: { color: "var(--info)", bg: "var(--info-bg)" },
+  Processing: { color: "var(--warning)", bg: "var(--warning-bg)" },
+  Cancelled: { color: "var(--danger)", bg: "var(--danger-bg)" },
+};
+
+const card = {
+  background: "var(--bg-card)",
+  border: "1px solid var(--border)",
+  borderRadius: "14px",
+  overflow: "hidden",
 };
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState(initialOrders);
-  const [filterStatus, setFilter] = useState("all");
+  const [filter, setFilter] = useState("all");
   const [editingId, setEditingId] = useState(null);
 
   const filtered =
-    filterStatus === "all"
-      ? orders
-      : orders.filter((o) => o.status === filterStatus);
+    filter === "all" ? orders : orders.filter((o) => o.status === filter);
 
   const updateStatus = (id, status) => {
     setOrders((os) => os.map((o) => (o.id === id ? { ...o, status } : o)));
@@ -82,25 +87,57 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "12px",
+        }}
+      >
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Orders</h1>
-          <p className="text-sm text-gray-400 mt-1">{filtered.length} orders</p>
+          <h1
+            style={{
+              fontSize: "20px",
+              fontWeight: 600,
+              color: "var(--text-primary)",
+            }}
+          >
+            Orders
+          </h1>
+          <p
+            style={{
+              color: "var(--text-muted)",
+              fontSize: "13px",
+              marginTop: "2px",
+            }}
+          >
+            {filtered.length} orders
+          </p>
         </div>
 
-        {/* Status filter tabs */}
-        <div className="flex gap-2 flex-wrap">
+        {/* Filter pills */}
+        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
           {["all", ...STATUSES].map((s) => (
             <button
               key={s}
               onClick={() => setFilter(s)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors capitalize ${
-                filterStatus === s
-                  ? "bg-gray-900 text-white"
-                  : "bg-white text-gray-500 border border-gray-200 hover:border-gray-400"
-              }`}
+              style={{
+                padding: "5px 14px",
+                borderRadius: "20px",
+                fontSize: "12px",
+                fontWeight: 500,
+                cursor: "pointer",
+                fontFamily: "var(--font-main)",
+                textTransform: "capitalize",
+                border: filter === s ? "none" : "1px solid var(--border)",
+                background: filter === s ? "var(--accent)" : "transparent",
+                color:
+                  filter === s ? "var(--accent-fg)" : "var(--text-secondary)",
+                transition: "all 0.15s",
+              }}
             >
               {s}
             </button>
@@ -108,12 +145,11 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      <div style={card}>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr className="border-b border-gray-100">
+              <tr style={{ borderBottom: "1px solid var(--border)" }}>
                 {[
                   "Order ID",
                   "Customer",
@@ -124,49 +160,112 @@ export default function OrdersPage() {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="text-left text-xs font-medium text-gray-400 uppercase tracking-wide px-6 py-3"
+                    style={{
+                      textAlign: "left",
+                      padding: "10px 20px",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                    }}
                   >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filtered.map((order) => (
+            <tbody>
+              {filtered.map((o, i) => (
                 <tr
-                  key={order.id}
-                  className="hover:bg-gray-50 transition-colors"
+                  key={o.id}
+                  style={{
+                    borderBottom:
+                      i < filtered.length - 1
+                        ? "1px solid var(--border)"
+                        : "none",
+                  }}
                 >
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                    {order.id}
+                  <td
+                    style={{
+                      padding: "13px 20px",
+                      fontSize: "12px",
+                      fontWeight: 500,
+                      color: "var(--text-primary)",
+                      fontFamily: "var(--font-mono)",
+                    }}
+                  >
+                    {o.id}
                   </td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm font-medium text-gray-900">
-                      {order.customer}
-                    </p>
-                    <p className="text-xs text-gray-400">{order.email}</p>
+                  <td style={{ padding: "13px 20px" }}>
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      {o.customer}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "var(--text-muted)",
+                        marginTop: "1px",
+                      }}
+                    >
+                      {o.email}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {order.product}
+                  <td
+                    style={{
+                      padding: "13px 20px",
+                      fontSize: "13px",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    {o.product}
                   </td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                    ₹{order.amount.toLocaleString("en-IN")}
+                  <td
+                    style={{
+                      padding: "13px 20px",
+                      fontSize: "13px",
+                      fontWeight: 500,
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    ₹{o.amount.toLocaleString("en-IN")}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {new Date(order.date).toLocaleDateString("en-IN", {
+                  <td
+                    style={{
+                      padding: "13px 20px",
+                      fontSize: "12px",
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    {new Date(o.date).toLocaleDateString("en-IN", {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
                     })}
                   </td>
-                  <td className="px-6 py-4">
-                    {editingId === order.id ? (
+                  <td style={{ padding: "13px 20px" }}>
+                    {editingId === o.id ? (
                       <select
-                        defaultValue={order.status}
-                        onChange={(e) => updateStatus(order.id, e.target.value)}
+                        defaultValue={o.status}
+                        onChange={(e) => updateStatus(o.id, e.target.value)}
                         onBlur={() => setEditingId(null)}
                         autoFocus
-                        className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white"
+                        style={{
+                          fontSize: "12px",
+                          padding: "3px 8px",
+                          borderRadius: "6px",
+                          border: "1px solid var(--border)",
+                          background: "var(--bg-input)",
+                          color: "var(--text-primary)",
+                          fontFamily: "var(--font-main)",
+                          outline: "none",
+                        }}
                       >
                         {STATUSES.map((s) => (
                           <option key={s} value={s}>
@@ -176,11 +275,20 @@ export default function OrdersPage() {
                       </select>
                     ) : (
                       <button
-                        onClick={() => setEditingId(order.id)}
-                        className={`text-xs font-medium px-2.5 py-1 rounded-full cursor-pointer hover:opacity-80 transition-opacity ${STATUS_STYLES[order.status]}`}
-                        title="Click to change status"
+                        onClick={() => setEditingId(o.id)}
+                        title="Click to update"
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          padding: "3px 10px",
+                          borderRadius: "20px",
+                          border: "none",
+                          cursor: "pointer",
+                          color: STATUS[o.status].color,
+                          background: STATUS[o.status].bg,
+                        }}
                       >
-                        {order.status}
+                        {o.status}
                       </button>
                     )}
                   </td>
