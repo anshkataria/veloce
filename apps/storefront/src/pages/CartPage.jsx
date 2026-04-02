@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import useCartStore from "../store/cartStore";
+import { formatPrice } from "../utils/formatPrice";
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, getTotalPrice } = useCartStore();
@@ -90,7 +91,7 @@ export default function CartPage() {
                   {/* Price + delete */}
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-semibold text-gray-900">
-                      ₹{(product.price * quantity).toLocaleString("en-IN")}
+                      {formatPrice(product.price * quantity)}
                     </span>
                     <button
                       onClick={() => removeItem(product.id, size)}
@@ -115,7 +116,7 @@ export default function CartPage() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
-                <span>₹{total.toLocaleString("en-IN")}</span>
+                <span>{formatPrice(total)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Shipping</span>
@@ -123,21 +124,20 @@ export default function CartPage() {
                   {shipping === 0 ? (
                     <span className="text-green-600">Free</span>
                   ) : (
-                    `₹${shipping}`
+                    formatPrice(shipping)
                   )}
                 </span>
               </div>
               {shipping > 0 && (
                 <p className="text-xs text-gray-400">
-                  Add ₹{(999 - total).toLocaleString("en-IN")} more for free
-                  shipping
+                  Add {formatPrice(999 - total)} more for free shipping
                 </p>
               )}
             </div>
 
             <div className="border-t border-gray-200 pt-4 flex justify-between font-semibold text-gray-900">
               <span>Total</span>
-              <span>₹{grandTotal.toLocaleString("en-IN")}</span>
+              <span>{formatPrice(grandTotal)}</span>
             </div>
 
             <button

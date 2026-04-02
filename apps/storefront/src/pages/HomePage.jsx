@@ -17,9 +17,9 @@ export default function HomePage() {
       {/* ───── HERO ───── */}
       <section className="relative h-[85vh] min-h-[500px] flex items-center overflow-hidden bg-stone-100">
         <img
-          src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1400&q=80"
+          src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=1400&q=80"
           alt="Hero"
-          className="absolute inset-0 w-full h-full object-cover object-top"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         {/* dark overlay so text is readable */}
         <div className="absolute inset-0 bg-black/35" />
@@ -27,21 +27,21 @@ export default function HomePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-xl">
             <p className="text-white/80 text-sm tracking-[0.3em] uppercase mb-4">
-              New Collection
+              New Arrivals
             </p>
             <h1
               style={{ fontFamily: "var(--font-display)" }}
               className="text-5xl sm:text-6xl lg:text-7xl font-light text-white leading-[1.1] mb-6 italic"
             >
-              Wear the Art of
+              Drive the
               <br />
               <span className="not-italic font-normal tracking-widest text-4xl sm:text-5xl lg:text-6xl">
-                INDIAN CRAFT
+                EXTRAORDINARY
               </span>
             </h1>
             <p className="text-white/75 text-base sm:text-lg mb-8 leading-relaxed">
-              Handcrafted ethnic wear that blends tradition with modern
-              silhouettes.
+              Handpicked supercars, sports cars and luxury vehicles. Delivered
+              to your door.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
@@ -50,13 +50,6 @@ export default function HomePage() {
                            text-sm font-medium rounded-full hover:bg-gray-100 transition-colors"
               >
                 Shop Now <ArrowRight size={16} />
-              </Link>
-              <Link
-                to="/products?category=suits"
-                className="inline-flex items-center gap-2 border border-white text-white px-6 py-3
-                           text-sm font-medium rounded-full hover:bg-white/10 transition-colors"
-              >
-                View Suits
               </Link>
             </div>
           </div>
@@ -127,23 +120,23 @@ export default function HomePage() {
             {[
               {
                 icon: Truck,
-                title: "Free Shipping",
-                desc: "On orders above ₹999",
+                title: "Pan-India Delivery",
+                desc: "White-glove transport service",
               },
               {
                 icon: RefreshCw,
-                title: "Easy Returns",
-                desc: "7-day hassle-free returns",
+                title: "7-Day Returns",
+                desc: "Hassle-free return policy",
               },
               {
                 icon: Shield,
-                title: "Secure Payments",
-                desc: "100% safe & encrypted",
+                title: "Verified Inventory",
+                desc: "Every car inspected & certified",
               },
               {
                 icon: HeadphonesIcon,
-                title: "Support",
-                desc: "Mon–Sat, 10am–6pm",
+                title: "Concierge Support",
+                desc: "Dedicated advisor, Mon–Sat",
               },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex items-start gap-3">

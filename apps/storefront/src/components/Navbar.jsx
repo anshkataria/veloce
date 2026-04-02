@@ -9,10 +9,10 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const navLinks = [
-    { to: "/products", label: "All Products" },
-    { to: "/products?category=suits", label: "Suits" },
-    { to: "/products?category=dupattas", label: "Dupattas" },
-    { to: "/products?category=sets", label: "Sets" },
+    { to: "/products", label: "All Cars" },
+    { to: "/products?category=supercars", label: "Supercars" },
+    { to: "/products?category=sportscars", label: "Sport Cars" },
+    { to: "/products?category=luxury", label: "Luxury" },
   ];
 
   return (
@@ -25,7 +25,7 @@ export default function Navbar() {
             style={{ fontFamily: "var(--font-display)" }}
             className="text-2xl font-light tracking-[0.3em] uppercase text-gray-900"
           >
-            Store
+            VELOCE
           </Link>
 
           {/* Desktop nav links */}

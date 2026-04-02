@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useCartStore from "../store/cartStore";
+import { formatPrice } from "../utils/formatPrice";
 
 export default function CheckoutPage() {
   const { items, getTotalPrice, clearCart } = useCartStore();
@@ -127,7 +128,7 @@ export default function CheckoutPage() {
                         Size: {size} · Qty: {quantity}
                       </p>
                       <p className="text-xs font-semibold text-gray-900 mt-1">
-                        ₹{(product.price * quantity).toLocaleString("en-IN")}
+                        {formatPrice(product.price * quantity)}
                       </p>
                     </div>
                   </div>
@@ -137,7 +138,7 @@ export default function CheckoutPage() {
               <div className="border-t border-gray-200 pt-4 space-y-2 text-sm">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
-                  <span>₹{total.toLocaleString("en-IN")}</span>
+                  <span>{formatPrice(total)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
@@ -145,13 +146,13 @@ export default function CheckoutPage() {
                     {shipping === 0 ? (
                       <span className="text-green-600">Free</span>
                     ) : (
-                      `₹${shipping}`
+                      formatPrice(shipping)
                     )}
                   </span>
                 </div>
                 <div className="flex justify-between font-semibold text-gray-900 pt-2 border-t border-gray-200">
                   <span>Total</span>
-                  <span>₹{grandTotal.toLocaleString("en-IN")}</span>
+                  <span>{formatPrice(grandTotal)}</span>
                 </div>
               </div>
 

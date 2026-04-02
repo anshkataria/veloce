@@ -9,7 +9,7 @@ export default function LoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (form.email === "admin@store.com" && form.password === "admin123") {
+    if (form.email === "admin@veloce.in" && form.password === "admin123") {
       navigate("/dashboard");
     } else {
       setError("Invalid credentials");
@@ -110,7 +110,7 @@ export default function LoginPage() {
               label: "Email",
               name: "email",
               type: "email",
-              placeholder: "admin@store.com",
+              placeholder: "admin@veloce.in",
             },
             {
               label: "Password",
@@ -171,7 +171,7 @@ export default function LoginPage() {
             color: "var(--text-muted)",
           }}
         >
-          admin@store.com / admin123
+          admin@veloce.in / admin123
         </p>
       </div>
     </div>

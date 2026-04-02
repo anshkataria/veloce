@@ -4,55 +4,71 @@ import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
 const initialProducts = [
   {
     id: 1,
-    name: "Ivory Chanderi Suit",
-    category: "suits",
-    price: 3499,
-    stock: 12,
+    name: "Lamborghini Hurac\u00e1n EVO",
+    category: "supercars",
+    price: 32500000,
+    stock: 2,
     inStock: true,
   },
   {
     id: 2,
-    name: "Rose Silk Kurta Set",
-    category: "sets",
-    price: 5299,
-    stock: 8,
+    name: "Mercedes-AMG GT Black Series",
+    category: "supercars",
+    price: 28900000,
+    stock: 1,
     inStock: true,
   },
   {
     id: 3,
-    name: "Sage Green Anarkali",
-    category: "suits",
-    price: 4799,
-    stock: 5,
+    name: "Porsche 911 GT3 RS",
+    category: "sportscars",
+    price: 23500000,
+    stock: 3,
     inStock: true,
   },
   {
     id: 4,
-    name: "Midnight Blue Sharara",
-    category: "sets",
-    price: 6299,
+    name: "Ferrari SF90 Stradale",
+    category: "supercars",
+    price: 55000000,
     stock: 0,
     inStock: false,
   },
   {
     id: 5,
-    name: "Blush Pink Dupatta",
-    category: "dupattas",
-    price: 1299,
-    stock: 20,
+    name: "BMW M4 Competition",
+    category: "sportscars",
+    price: 9800000,
+    stock: 5,
     inStock: true,
   },
   {
     id: 6,
-    name: "Terracotta Cotton Set",
-    category: "sets",
-    price: 2999,
-    stock: 7,
+    name: "Rolls-Royce Ghost",
+    category: "luxury",
+    price: 68000000,
+    stock: 1,
+    inStock: true,
+  },
+  {
+    id: 7,
+    name: "Aston Martin DB12",
+    category: "luxury",
+    price: 26500000,
+    stock: 2,
+    inStock: true,
+  },
+  {
+    id: 8,
+    name: "McLaren 720S",
+    category: "supercars",
+    price: 29500000,
+    stock: 1,
     inStock: true,
   },
 ];
 
-const emptyForm = { name: "", category: "suits", price: "", stock: "" };
+const emptyForm = { name: "", category: "supercars", price: "", stock: "" };
 
 const card = {
   background: "var(--bg-card)",
@@ -432,9 +448,11 @@ export default function ProductsPage() {
                 }
                 style={inputStyle}
               >
-                {["suits", "sets", "dupattas"].map((c) => (
+                {["supercars", "sportscars", "luxury"].map((c) => (
                   <option key={c} value={c}>
-                    {c.charAt(0).toUpperCase() + c.slice(1)}
+                    {c === "sportscars"
+                      ? "Sport Cars"
+                      : c.charAt(0).toUpperCase() + c.slice(1)}
                   </option>
                 ))}
               </select>

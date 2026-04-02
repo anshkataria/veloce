@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ShoppingBag, ArrowLeft, Check } from "lucide-react";
 import useCartStore from "../store/cartStore";
 import { mockProducts } from "../data/mockProducts";
+import { formatPrice } from "../utils/formatPrice";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -78,12 +79,12 @@ export default function ProductDetailPage() {
           {/* Price */}
           <div className="flex items-center gap-3">
             <span className="text-2xl font-semibold text-gray-900">
-              ₹{product.price.toLocaleString("en-IN")}
+              {formatPrice(product.price)}
             </span>
             {product.originalPrice > product.price && (
               <>
                 <span className="text-base text-gray-400 line-through">
-                  ₹{product.originalPrice.toLocaleString("en-IN")}
+                  {formatPrice(product.originalPrice)}
                 </span>
                 <span className="text-sm bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full font-medium">
                   {discount}% off
@@ -184,9 +185,7 @@ export default function ProductDetailPage() {
                 <p className="text-sm font-medium text-gray-900 mt-2">
                   {p.name}
                 </p>
-                <p className="text-sm text-gray-500">
-                  ₹{p.price.toLocaleString("en-IN")}
-                </p>
+                <p className="text-sm text-gray-500">{formatPrice(p.price)}</p>
               </div>
             ))}
         </div>

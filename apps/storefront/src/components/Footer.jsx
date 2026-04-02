@@ -7,16 +7,16 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <h3 className="text-lg font-semibold tracking-widest uppercase mb-4">
-              Store
+              VELOCE
             </h3>
             <p className="text-sm text-gray-500 leading-relaxed">
-              Curated ethnic wear for modern women.
+              India's premier destination for exotic and luxury automobiles.
             </p>
           </div>
 
           <div>
             <h4 className="text-sm font-medium text-gray-900 mb-4 uppercase tracking-wide">
-              Shop
+              Inventory
             </h4>
             <ul className="space-y-2 text-sm text-gray-500">
               <li>
@@ -24,23 +24,23 @@ export default function Footer() {
                   to="/products"
                   className="hover:text-gray-900 transition-colors"
                 >
-                  All Products
+                  All Cars
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/products?category=suits"
+                  to="/products?category=supercars"
                   className="hover:text-gray-900 transition-colors"
                 >
-                  Suits
+                  Supercars
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/products?category=sets"
+                  to="/products?category=luxury"
                   className="hover:text-gray-900 transition-colors"
                 >
-                  Sets
+                  Luxury
                 </Link>
               </li>
             </ul>
@@ -77,14 +77,14 @@ export default function Footer() {
               Contact
             </h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li>support@store.com</li>
+              <li>contact@veloce.in</li>
               <li>Mon–Sat, 10am–6pm</li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-200 mt-10 pt-6 text-center text-xs text-gray-400">
-          © {new Date().getFullYear()} Store. All rights reserved.
+          © {new Date().getFullYear()} VELOCE. All rights reserved.
         </div>
       </div>
     </footer>

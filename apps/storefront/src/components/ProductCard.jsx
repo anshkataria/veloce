@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ShoppingBag } from "lucide-react";
 import useCartStore from "../store/cartStore";
+import { formatPrice } from "../utils/formatPrice";
 
 export default function ProductCard({ product }) {
   const addItem = useCartStore((s) => s.addItem);
@@ -73,11 +74,11 @@ export default function ProductCard({ product }) {
         </h3>
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-gray-900">
-            ₹{product.price.toLocaleString("en-IN")}
+            {formatPrice(product.price)}
           </span>
           {product.originalPrice > product.price && (
             <span className="text-xs text-gray-400 line-through">
-              ₹{product.originalPrice.toLocaleString("en-IN")}
+              {formatPrice(product.originalPrice)}
             </span>
           )}
         </div>

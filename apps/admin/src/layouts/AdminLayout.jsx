@@ -85,7 +85,7 @@ export default function AdminLayout() {
                 letterSpacing: "0.05em",
               }}
             >
-              STORE ADMIN
+              VELOCE ADMIN
             </span>
           </div>
           <button

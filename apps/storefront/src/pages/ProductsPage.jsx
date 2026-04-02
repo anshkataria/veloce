@@ -4,7 +4,7 @@ import { SlidersHorizontal, X } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import { mockProducts } from "../data/mockProducts";
 
-const CATEGORIES = ["all", "suits", "sets", "dupattas"];
+const CATEGORIES = ["all", "supercars", "sportscars", "luxury"];
 const SORT_OPTIONS = [
   { label: "Newest", value: "newest" },
   { label: "Price: Low to High", value: "price_asc" },
