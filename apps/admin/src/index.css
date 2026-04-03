@@ -1,1 +1,84 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
+
+:root {
+  --font-main: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+
+  /* Light mode */
+  --bg-main: #f8f7f5;
+  --bg-card: #ffffff;
+  --bg-input: #f3f2f0;
+  --border: #e8e6e1;
+  --text-primary: #1a1917;
+  --text-secondary: #6b6860;
+  --text-muted: #a8a49e;
+  --accent: #1a1917;
+  --accent-fg: #ffffff;
+  --sidebar-bg: #1a1917;
+  --sidebar-text: #a8a49e;
+  --sidebar-active: #ffffff;
+  --sidebar-active-bg: #2d2c2a;
+  --success: #1a6b3c;
+  --success-bg: #edf7f1;
+  --warning: #8a5a00;
+  --warning-bg: #fef8ec;
+  --danger: #9b2626;
+  --danger-bg: #fdf2f2;
+  --info: #1a4b8a;
+  --info-bg: #eef4fd;
+}
+
+[data-theme="dark"] {
+  --bg-main: #111110;
+  --bg-card: #1c1c1a;
+  --bg-input: #242422;
+  --border: #2a2a28;
+  --text-primary: #e8e6e1;
+  --text-secondary: #8a8780;
+  --text-muted: #5a5854;
+  --accent: #e8e6e1;
+  --accent-fg: #1a1917;
+  --sidebar-bg: #0e0e0d;
+  --sidebar-text: #6b6860;
+  --sidebar-active: #e8e6e1;
+  --sidebar-active-bg: #1c1c1a;
+  --success: #4ade80;
+  --success-bg: #052010;
+  --warning: #fbbf24;
+  --warning-bg: #1a1000;
+  --danger: #f87171;
+  --danger-bg: #1a0505;
+  --info: #60a5fa;
+  --info-bg: #05101a;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
