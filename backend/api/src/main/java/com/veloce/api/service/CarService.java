@@ -27,14 +27,34 @@ public class CarService {
         };
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Car.Category cat = null;
 
-        if (category != null && !category.isBlank()) {
+        boolean hasCategory = category != null && !category.isBlank();
+        boolean hasSearch   = search   != null && !search.isBlank();
+
+        Car.Category cat = null;
+        if (hasCategory) {
             try { cat = Car.Category.valueOf(category.toUpperCase()); }
-            catch (IllegalArgumentException ignored) {}
+            catch (IllegalArgumentException ignored) { hasCategory = false; }
         }
 
-        return carRepository.findWithFilters(cat, search, pageable);
+        if (hasCategory && hasSearch) {
+            // filter by both category AND search
+            return carRepository
+                    .findByCategoryAndNameContainingIgnoreCaseOrCategoryAndBrandContainingIgnoreCase(
+                            cat, search, cat, search, pageable
+                    );
+        } else if (hasCategory) {
+            // filter by category only
+            return carRepository.findByCategory(cat, pageable);
+        } else if (hasSearch) {
+            // filter by search only
+            return carRepository.findByNameContainingIgnoreCaseOrBrandContainingIgnoreCase(
+                    search, search, pageable
+            );
+        } else {
+            // no filters — return everything
+            return carRepository.findAll(pageable);
+        }
     }
 
     public Car getCarById(Long id) {

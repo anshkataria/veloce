@@ -31,8 +31,10 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
 
-    @Value("${cors.allowed-origins}")
-    private List<String> allowedOrigins;
+    private final List<String> allowedOrigins = List.of(
+            "http://localhost:5173",
+            "http://localhost:5174"
+    );
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

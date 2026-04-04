@@ -21,8 +21,3 @@ server:
 jwt:
   secret: veloce-super-secret-jwt-key-change-this-in-production-min-32-chars
   expiration: 86400000
-
-cors:
-  allowed-origins:
-    - http://localhost:5173
-    - http://localhost:5174
