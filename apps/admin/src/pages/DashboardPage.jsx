@@ -14,95 +14,26 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
-const stats = [
-  {
-    label: "Revenue",
-    value: "₹12.4 Cr",
-    change: "+18%",
-    icon: TrendingUp,
-    color: "#1a6b3c",
-    colorBg: "#edf7f1",
-  },
-  {
-    label: "Orders",
-    value: "128",
-    change: "+12%",
-    icon: ShoppingBag,
-    color: "#1a4b8a",
-    colorBg: "#eef4fd",
-  },
-  {
-    label: "Products",
-    value: "54",
-    change: "+3",
-    icon: Package,
-    color: "#6b3fa0",
-    colorBg: "#f5f0fd",
-  },
-  {
-    label: "Customers",
-    value: "340",
-    change: "+8%",
-    icon: Users,
-    color: "#8a5a00",
-    colorBg: "#fef8ec",
-  },
-];
-
-const revenueData = [
-  { month: "Aug", revenue: 18000 },
-  { month: "Sep", revenue: 24000 },
-  { month: "Oct", revenue: 19000 },
-  { month: "Nov", revenue: 32000 },
-  { month: "Dec", revenue: 45000 },
-  { month: "Jan", revenue: 38000 },
-];
-
-const recentOrders = [
-  {
-    id: "ORD-128",
-    customer: "Arjun Mehta",
-    product: "Lamborghini Hurac\u00e1n EVO",
-    amount: 32500000,
-    status: "Delivered",
-  },
-  {
-    id: "ORD-127",
-    customer: "Rahul Singhania",
-    product: "Porsche 911 GT3 RS",
-    amount: 23500000,
-    status: "Shipped",
-  },
-  {
-    id: "ORD-126",
-    customer: "Vikram Oberoi",
-    product: "Mercedes-AMG GT Black Series",
-    amount: 28900000,
-    status: "Processing",
-  },
-  {
-    id: "ORD-125",
-    customer: "Rohan Kapoor",
-    product: "BMW M4 Competition",
-    amount: 9800000,
-    status: "Delivered",
-  },
-  {
-    id: "ORD-124",
-    customer: "Kabir Malhotra",
-    product: "McLaren 720S",
-    amount: 29500000,
-    status: "Cancelled",
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { orderService } from "../services/orderService";
+import { carService } from "../services/carService";
 
 const STATUS = {
-  Delivered: { color: "var(--success)", bg: "var(--success-bg)" },
-  Shipped: { color: "var(--info)", bg: "var(--info-bg)" },
-  Processing: { color: "var(--warning)", bg: "var(--warning-bg)" },
-  Cancelled: { color: "var(--danger)", bg: "var(--danger-bg)" },
+  DELIVERED: { color: "var(--success)", bg: "var(--success-bg)" },
+  CONFIRMED: { color: "var(--info)", bg: "var(--info-bg)" },
+  SHIPPED: { color: "var(--info)", bg: "var(--info-bg)" },
+  PROCESSING: { color: "var(--warning)", bg: "var(--warning-bg)" },
+  CANCELLED: { color: "var(--danger)", bg: "var(--danger-bg)" },
 };
+
+const revenueData = [
+  { month: "Aug", revenue: 18000000 },
+  { month: "Sep", revenue: 24000000 },
+  { month: "Oct", revenue: 19000000 },
+  { month: "Nov", revenue: 32000000 },
+  { month: "Dec", revenue: 45000000 },
+  { month: "Jan", revenue: 38000000 },
+];
 
 const card = {
   background: "var(--bg-card)",
@@ -111,10 +42,68 @@ const card = {
   padding: "20px",
 };
 
+const formatPrice = (v) => {
+  const n = Number(v);
+  if (n >= 10000000) return `₹${(n / 10000000).toFixed(1)} Cr`;
+  if (n >= 100000) return `₹${(n / 100000).toFixed(1)} L`;
+  return `₹${n.toLocaleString("en-IN")}`;
+};
+
 export default function DashboardPage() {
+  const { data: orders = [] } = useQuery({
+    queryKey: ["admin-orders"],
+    queryFn: () => orderService.getAll().then((r) => r.data),
+  });
+
+  const { data: carsData } = useQuery({
+    queryKey: ["admin-cars"],
+    queryFn: () => carService.getAll({ size: 100 }).then((r) => r.data),
+  });
+
+  const totalRevenue = orders.reduce(
+    (sum, o) => sum + Number(o.totalAmount ?? 0),
+    0,
+  );
+  const totalCars = carsData?.totalElements ?? 0;
+  const recentOrders = orders.slice(0, 5);
+
+  const stats = [
+    {
+      label: "Revenue",
+      value: formatPrice(totalRevenue),
+      change: "+18%",
+      icon: TrendingUp,
+      color: "#1a6b3c",
+      colorBg: "#edf7f1",
+    },
+    {
+      label: "Orders",
+      value: orders.length,
+      change: "+12%",
+      icon: ShoppingBag,
+      color: "#1a4b8a",
+      colorBg: "#eef4fd",
+    },
+    {
+      label: "Vehicles",
+      value: totalCars,
+      change: "+3",
+      icon: Package,
+      color: "#6b3fa0",
+      colorBg: "#f5f0fd",
+    },
+    {
+      label: "Customers",
+      value: "—",
+      change: "",
+      icon: Users,
+      color: "#8a5a00",
+      colorBg: "#fef8ec",
+    },
+  ];
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      {/* Page title */}
       <div>
         <h1
           style={{
@@ -132,7 +121,7 @@ export default function DashboardPage() {
             marginTop: "2px",
           }}
         >
-          Here's what's happening in your store today.
+          Here's what's happening in VELOCE today.
         </p>
       </div>
 
@@ -189,28 +178,30 @@ export default function DashboardPage() {
             >
               {value}
             </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                marginTop: "6px",
-              }}
-            >
-              <ArrowUpRight size={12} color="var(--success)" />
-              <span
+            {change && (
+              <div
                 style={{
-                  fontSize: "12px",
-                  color: "var(--success)",
-                  fontWeight: 500,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  marginTop: "6px",
                 }}
               >
-                {change}
-              </span>
-              <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                vs last month
-              </span>
-            </div>
+                <ArrowUpRight size={12} color="var(--success)" />
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--success)",
+                    fontWeight: 500,
+                  }}
+                >
+                  {change}
+                </span>
+                <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                  vs last month
+                </span>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -265,10 +256,10 @@ export default function DashboardPage() {
               tick={{ fontSize: 11, fill: "var(--text-muted)" }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+              tickFormatter={(v) => `₹${(v / 10000000).toFixed(0)}Cr`}
             />
             <Tooltip
-              formatter={(v) => [`₹${v.toLocaleString("en-IN")}`, "Revenue"]}
+              formatter={(v) => [formatPrice(v), "Revenue"]}
               contentStyle={{
                 borderRadius: "10px",
                 border: "1px solid var(--border)",
@@ -288,7 +279,7 @@ export default function DashboardPage() {
         </ResponsiveContainer>
       </div>
 
-      {/* Recent orders table */}
+      {/* Recent orders */}
       <div style={{ ...card, padding: 0, overflow: "hidden" }}>
         <div
           style={{
@@ -309,99 +300,104 @@ export default function DashboardPage() {
             Recent Orders
           </h2>
           <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-            {recentOrders.length} orders
+            {recentOrders.length} latest
           </span>
         </div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                {["Order", "Customer", "Product", "Amount", "Status"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      style={{
-                        textAlign: "left",
-                        padding: "10px 20px",
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        color: "var(--text-muted)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
+                {["Order", "Customer", "Amount", "Status"].map((h) => (
+                  <th
+                    key={h}
+                    style={{
+                      textAlign: "left",
+                      padding: "10px 20px",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "var(--text-muted)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {recentOrders.map((o, i) => (
-                <tr
-                  key={o.id}
-                  style={{
-                    borderBottom:
-                      i < recentOrders.length - 1
-                        ? "1px solid var(--border)"
-                        : "none",
-                  }}
-                >
+              {recentOrders.length === 0 ? (
+                <tr>
                   <td
+                    colSpan={4}
                     style={{
-                      padding: "13px 20px",
+                      padding: "30px",
+                      textAlign: "center",
                       fontSize: "13px",
-                      fontWeight: 500,
-                      color: "var(--text-primary)",
-                      fontFamily: "var(--font-mono)",
+                      color: "var(--text-muted)",
                     }}
                   >
-                    {o.id}
-                  </td>
-                  <td
-                    style={{
-                      padding: "13px 20px",
-                      fontSize: "13px",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    {o.customer}
-                  </td>
-                  <td
-                    style={{
-                      padding: "13px 20px",
-                      fontSize: "13px",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    {o.product}
-                  </td>
-                  <td
-                    style={{
-                      padding: "13px 20px",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                      color: "var(--text-primary)",
-                    }}
-                  >
-                    ₹{o.amount.toLocaleString("en-IN")}
-                  </td>
-                  <td style={{ padding: "13px 20px" }}>
-                    <span
-                      style={{
-                        fontSize: "11px",
-                        fontWeight: 500,
-                        padding: "3px 10px",
-                        borderRadius: "20px",
-                        color: STATUS[o.status].color,
-                        background: STATUS[o.status].bg,
-                      }}
-                    >
-                      {o.status}
-                    </span>
+                    No orders yet
                   </td>
                 </tr>
-              ))}
+              ) : (
+                recentOrders.map((o, i) => (
+                  <tr
+                    key={o.id}
+                    style={{
+                      borderBottom:
+                        i < recentOrders.length - 1
+                          ? "1px solid var(--border)"
+                          : "none",
+                    }}
+                  >
+                    <td
+                      style={{
+                        padding: "13px 20px",
+                        fontSize: "12px",
+                        fontWeight: 500,
+                        color: "var(--text-primary)",
+                        fontFamily: "var(--font-mono)",
+                      }}
+                    >
+                      ORD-{o.id}
+                    </td>
+                    <td
+                      style={{
+                        padding: "13px 20px",
+                        fontSize: "13px",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      {o.shippingName}
+                    </td>
+                    <td
+                      style={{
+                        padding: "13px 20px",
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      {formatPrice(o.totalAmount)}
+                    </td>
+                    <td style={{ padding: "13px 20px" }}>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 500,
+                          padding: "3px 10px",
+                          borderRadius: "20px",
+                          color: STATUS[o.status]?.color,
+                          background: STATUS[o.status]?.bg,
+                        }}
+                      >
+                        {o.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

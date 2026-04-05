@@ -1,18 +1,35 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Store } from "lucide-react";
+import { authService } from "../services/authService";
+import useAuthStore from "../store/authStore";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const login = useAuthStore((s) => s.login);
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.email === "admin@veloce.in" && form.password === "admin123") {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await authService.login(form);
+      if (res.data.role !== "ADMIN") {
+        setError("Access denied. Admin accounts only.");
+        return;
+      }
+      login(
+        { name: res.data.name, email: res.data.email, role: res.data.role },
+        res.data.token,
+      );
       navigate("/dashboard");
-    } else {
-      setError("Invalid credentials");
+    } catch (err) {
+      setError(err.response?.data?.error || "Invalid credentials");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,7 +91,7 @@ export default function LoginPage() {
               color: "var(--text-primary)",
             }}
           >
-            Admin Login
+            VELOCE Admin
           </h1>
           <p
             style={{
@@ -147,6 +164,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
+            disabled={loading}
             style={{
               padding: "11px",
               borderRadius: "9px",
@@ -155,24 +173,15 @@ export default function LoginPage() {
               color: "var(--accent-fg)",
               fontSize: "13px",
               fontWeight: 500,
-              cursor: "pointer",
+              cursor: loading ? "not-allowed" : "pointer",
               fontFamily: "var(--font-main)",
               marginTop: "4px",
+              opacity: loading ? 0.7 : 1,
             }}
           >
-            Sign In
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: "12px",
-            color: "var(--text-muted)",
-          }}
-        >
-          admin@veloce.in / admin123
-        </p>
       </div>
     </div>
   );
