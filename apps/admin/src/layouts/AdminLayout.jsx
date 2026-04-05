@@ -57,7 +57,7 @@ export default function AdminLayout() {
         <div
           style={{
             padding: "24px 20px",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            borderBottom: "1px solid var(--border)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -68,18 +68,18 @@ export default function AdminLayout() {
               style={{
                 width: "30px",
                 height: "30px",
-                background: "rgba(255,255,255,0.1)",
+                background: "var(--sidebar-active-bg)",
                 borderRadius: "8px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Store size={15} color="white" />
+              <Store size={15} color="var(--sidebar-active)" />
             </div>
             <span
               style={{
-                color: "white",
+                color: "var(--sidebar-active)",
                 fontWeight: 600,
                 fontSize: "13px",
                 letterSpacing: "0.05em",
@@ -144,7 +144,7 @@ export default function AdminLayout() {
         <div
           style={{
             padding: "12px 10px",
-            borderTop: "1px solid rgba(255,255,255,0.06)",
+            borderTop: "1px solid var(--border)",
             display: "flex",
             flexDirection: "column",
             gap: "2px",
@@ -179,7 +179,7 @@ export default function AdminLayout() {
                 width: "32px",
                 height: "18px",
                 borderRadius: "9px",
-                background: dark ? "#4ade80" : "rgba(255,255,255,0.15)",
+                background: dark ? "var(--accent)" : "var(--sidebar-active-bg)",
                 position: "relative",
                 transition: "background 0.3s",
                 flexShrink: 0,
@@ -193,7 +193,7 @@ export default function AdminLayout() {
                   width: "12px",
                   height: "12px",
                   borderRadius: "50%",
-                  background: "white",
+                  background: "var(--accent-fg)",
                   transition: "left 0.3s",
                 }}
               />

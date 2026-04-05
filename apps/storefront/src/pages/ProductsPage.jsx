@@ -4,6 +4,8 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import ProductCard from "../components/ProductCard";
 import { carService } from "../services/carService";
+import { getCarImageByName } from "../utils/carImageMap";
+import { formatCategoryLabel, getDisplayInStock } from "../utils/catalogUtils";
 
 const CATEGORIES = ["all", "supercars", "sportscars", "luxury"];
 const SORT_OPTIONS = [
@@ -40,7 +42,11 @@ export default function ProductsPage() {
     staleTime: 30000,
   });
 
-  const cars = data?.content ?? [];
+  const cars = (data?.content ?? []).map((car) => ({
+    ...car,
+    imageUrl: getCarImageByName(car.name, car.imageUrl),
+    inStock: getDisplayInStock(car.name, car.inStock, car.stock),
+  }));
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -51,7 +57,7 @@ export default function ProductsPage() {
         >
           {activeCategory === "all"
             ? "All Cars"
-            : activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}
+            : formatCategoryLabel(activeCategory)}
         </h1>
         <p className="text-sm text-gray-400 mt-1">{cars.length} vehicles</p>
       </div>
@@ -101,13 +107,13 @@ export default function ProductsPage() {
                   <li key={cat}>
                     <button
                       onClick={() => setCategory(cat)}
-                      className={`text-sm capitalize transition-colors ${
+                      className={`text-sm transition-colors ${
                         activeCategory === cat
                           ? "text-gray-900 font-medium"
                           : "text-gray-500 hover:text-gray-900"
                       }`}
                     >
-                      {cat === "all" ? "All Cars" : cat}
+                      {cat === "all" ? "All Cars" : formatCategoryLabel(cat)}
                     </button>
                   </li>
                 ))}

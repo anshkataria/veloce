@@ -1,8 +1,17 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600;6..96,700&family=Sora:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
+
 :root {
-  --font-display: "Cormorant Garamond", serif;
-  --font-body: "Jost", sans-serif;
+  --font-display: "Bodoni Moda", serif;
+  --font-body: "Sora", sans-serif;
+  --veloce-bg: #0a0908;
+  --veloce-ink: #f2f4f3;
+  --veloce-accent: #a9927d;
+  --veloce-umber: #5e503f;
+  --veloce-sienna: #49111c;
+  --veloce-surface: rgba(23, 21, 20, 0.9);
+  --veloce-border: rgba(169, 146, 125, 0.28);
+  --veloce-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -10,12 +19,144 @@
 }
 
 body {
+  margin: 0;
   font-family: var(--font-body);
-  font-weight: 300;
+  font-weight: 400;
+  color: var(--veloce-ink);
+  background:
+    radial-gradient(circle at 12% 8%, #49111c 0%, rgba(73, 17, 28, 0) 34%),
+    radial-gradient(circle at 86% 4%, #5e503f 0%, rgba(94, 80, 63, 0) 32%),
+    var(--veloce-bg);
 }
 
 h1,
 h2,
 h3 {
   font-family: var(--font-display);
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: var(--veloce-accent);
+  color: #0a0908;
+}
+
+.glass-nav {
+  background: var(--veloce-surface);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--veloce-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.soft-card {
+  background: rgba(18, 18, 18, 0.9);
+  border: 1px solid var(--veloce-border);
+  box-shadow: var(--veloce-shadow);
+}
+
+.luxury-btn {
+  background: var(--veloce-accent);
+  color: #0a0908;
+  border: 1px solid rgba(169, 146, 125, 0.65);
+  transition:
+    background 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.luxury-btn:hover {
+  background: var(--veloce-ink);
+  color: #0a0908;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(169, 146, 125, 0.24);
+}
+
+/* Readability fixes for existing Tailwind utility classes on dark theme */
+.text-gray-900 {
+  color: #f2f4f3 !important;
+}
+
+.text-gray-700 {
+  color: #d8d0c7 !important;
+}
+
+.text-gray-600,
+.text-gray-500,
+.text-gray-400 {
+  color: #a9927d !important;
+}
+
+.bg-white,
+.bg-gray-50 {
+  background-color: #141110 !important;
+}
+
+.border-gray-100,
+.border-gray-200 {
+  border-color: #5e503f !important;
+}
+
+.luxury-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.luxury-chip::before {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: var(--veloce-accent);
+}
+
+.fade-in-up {
+  animation: fadeUp 0.6s ease both;
+}
+
+.section-reveal {
+  opacity: 0;
+  animation: fadeUp 0.75s ease forwards;
+}
+
+.auth-shell {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 28rem;
+  border-radius: 20px;
+  padding: 1.5rem;
+  background: rgba(16, 16, 16, 0.92);
+  border: 1px solid var(--veloce-border);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.5);
+}
+
+@media (min-width: 640px) {
+  .auth-card {
+    padding: 2rem;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

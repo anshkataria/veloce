@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import useCartStore from "../store/cartStore";
 import { carService } from "../services/carService";
 import { formatPrice } from "../utils/formatPrice";
+import { getCarImageByName } from "../utils/carImageMap";
+import { getDisplayInStock } from "../utils/catalogUtils";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -30,6 +32,8 @@ export default function ProductDetailPage() {
     enabled: !!car,
   });
 
+  const imageUrl = car ? getCarImageByName(car.name, car.imageUrl) : "";
+
   const handleAddToCart = () => {
     if (!selectedVariant) {
       setError("Please select a variant");
@@ -41,7 +45,7 @@ export default function ProductDetailPage() {
       name: car.name,
       price: car.price,
       originalPrice: car.originalPrice,
-      images: [car.imageUrl],
+      images: [imageUrl],
       sizes: car.variants?.split(",") ?? [],
     };
     addItem(product, selectedVariant, 1);
@@ -81,6 +85,7 @@ export default function ProductDetailPage() {
   const discount = car.originalPrice
     ? Math.round(((car.originalPrice - car.price) / car.originalPrice) * 100)
     : 0;
+  const isInStock = getDisplayInStock(car.name, car.inStock, car.stock);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -95,7 +100,7 @@ export default function ProductDetailPage() {
         {/* Image */}
         <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-gray-50">
           <img
-            src={car.imageUrl}
+            src={imageUrl}
             alt={car.name}
             className="w-full h-full object-cover"
           />
@@ -165,9 +170,9 @@ export default function ProductDetailPage() {
 
           <button
             onClick={handleAddToCart}
-            disabled={!car.inStock}
+            disabled={!isInStock}
             className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-full text-sm font-medium transition-all ${
-              !car.inStock
+              !isInStock
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                 : added
                   ? "bg-green-600 text-white"
@@ -181,14 +186,14 @@ export default function ProductDetailPage() {
             ) : (
               <>
                 <ShoppingBag size={16} />{" "}
-                {car.inStock ? "Add to Cart" : "Out of Stock"}
+                {isInStock ? "Add to Cart" : "Out of Stock"}
               </>
             )}
           </button>
 
           <div className="border-t border-gray-100 pt-6 space-y-2">
             <p className="text-xs text-gray-400">
-              White-glove pan-India delivery
+              White-glove worldwide delivery
             </p>
             <p className="text-xs text-gray-400">7-day hassle-free returns</p>
           </div>
@@ -212,7 +217,7 @@ export default function ProductDetailPage() {
                 onClick={() => navigate(`/products/${c.id}`)}
               >
                 <img
-                  src={c.imageUrl}
+                  src={getCarImageByName(c.name, c.imageUrl)}
                   alt={c.name}
                   className="w-full aspect-[3/4] object-cover rounded-xl hover:opacity-80 transition-opacity bg-gray-50"
                 />

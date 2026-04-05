@@ -43,10 +43,12 @@ const card = {
 };
 
 const formatPrice = (v) => {
-  const n = Number(v);
-  if (n >= 10000000) return `₹${(n / 10000000).toFixed(1)} Cr`;
-  if (n >= 100000) return `₹${(n / 100000).toFixed(1)} L`;
-  return `₹${n.toLocaleString("en-IN")}`;
+  const n = Number(v ?? 0);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(n);
 };
 
 export default function DashboardPage() {
@@ -73,32 +75,32 @@ export default function DashboardPage() {
       value: formatPrice(totalRevenue),
       change: "+18%",
       icon: TrendingUp,
-      color: "#1a6b3c",
-      colorBg: "#edf7f1",
+      color: "#f2f4f3",
+      colorBg: "#49111c",
     },
     {
       label: "Orders",
       value: orders.length,
       change: "+12%",
       icon: ShoppingBag,
-      color: "#1a4b8a",
-      colorBg: "#eef4fd",
+      color: "#0a0908",
+      colorBg: "#a9927d",
     },
     {
       label: "Vehicles",
       value: totalCars,
       change: "+3",
       icon: Package,
-      color: "#6b3fa0",
-      colorBg: "#f5f0fd",
+      color: "#f2f4f3",
+      colorBg: "#5e503f",
     },
     {
       label: "Customers",
       value: "—",
       change: "",
       icon: Users,
-      color: "#8a5a00",
-      colorBg: "#fef8ec",
+      color: "#0a0908",
+      colorBg: "#f2f4f3",
     },
   ];
 
@@ -256,7 +258,7 @@ export default function DashboardPage() {
               tick={{ fontSize: 11, fill: "var(--text-muted)" }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => `₹${(v / 10000000).toFixed(0)}Cr`}
+              tickFormatter={(v) => formatPrice(v)}
             />
             <Tooltip
               formatter={(v) => [formatPrice(v), "Revenue"]}

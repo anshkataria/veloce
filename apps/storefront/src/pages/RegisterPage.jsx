@@ -49,18 +49,24 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="auth-shell py-12">
+      <div className="auth-card fade-in-up">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-light text-gray-900">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-gray-500 mb-2">
+            VELOCE MEMBER ACCESS
+          </p>
+          <h1
+            className="text-3xl font-light text-[#f2f4f3]"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
             Create an account
           </h1>
-          <p className="text-sm text-gray-400 mt-2">Start shopping today</p>
+          <p className="text-sm text-[#a9927d] mt-2">Start shopping today</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-rose-50 text-rose-600 text-sm px-4 py-3 rounded-xl">
+            <div className="bg-[#49111c] text-[#f2f4f3] text-sm px-4 py-3 rounded-xl">
               {error}
             </div>
           )}
@@ -92,7 +98,7 @@ export default function RegisterPage() {
             },
           ].map((field) => (
             <div key={field.name}>
-              <label className="block text-xs font-medium text-gray-700 mb-1.5 uppercase tracking-wide">
+              <label className="block text-xs font-medium text-[#c7baac] mb-1.5 uppercase tracking-wide">
                 {field.label}
               </label>
               <input
@@ -101,26 +107,25 @@ export default function RegisterPage() {
                 value={form[field.name]}
                 onChange={handleChange}
                 placeholder={field.placeholder}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm
-                           focus:outline-none focus:ring-1 focus:ring-gray-400"
+                className="w-full border border-[#5e503f] bg-[#0a0908]/70 text-[#f2f4f3] rounded-xl px-4 py-3 text-sm
+                           placeholder:text-[#7f7265] focus:outline-none focus:ring-1 focus:ring-[#a9927d]"
               />
             </div>
           ))}
 
           <button
             type="submit"
-            className="w-full bg-gray-900 text-white py-3.5 rounded-full text-sm font-medium
-                       hover:bg-gray-700 transition-colors mt-2"
+            className="w-full luxury-btn py-3.5 rounded-full text-sm font-medium mt-2"
           >
             Create Account
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-400 mt-6">
+        <p className="text-center text-sm text-[#a9927d] mt-6">
           Already have an account?{" "}
           <Link
             to="/login"
-            className="text-gray-900 hover:underline font-medium"
+            className="text-[#f2f4f3] hover:text-[#a9927d] font-medium"
           >
             Sign in
           </Link>

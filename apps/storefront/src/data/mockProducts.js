@@ -56,7 +56,7 @@ export const mockProducts = [
     sizes: ["Coupe", "Spider"],
     description:
       "Hybrid V8, 1000 hp total system output. Ferrari's most powerful road car. Plug-in hybrid meets hypercar performance.",
-    inStock: false,
+    inStock: true,
     isNew: false,
   },
   {
@@ -132,7 +132,7 @@ export const mockCategories = [
   },
   {
     id: 2,
-    name: "Sport Cars",
+    name: "Sportscars",
     slug: "sportscars",
     image:
       "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80",
@@ -140,7 +140,7 @@ export const mockCategories = [
   },
   {
     id: 3,
-    name: "Luxury",
+    name: "Luxury cars",
     slug: "luxury",
     image:
       "https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&q=80",

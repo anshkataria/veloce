@@ -34,6 +34,15 @@ const inputStyle = {
   fontFamily: "var(--font-main)",
 };
 
+const formatPrice = (value) => {
+  const amount = Number(value ?? 0);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
 export default function ProductsPage() {
   const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
@@ -290,7 +299,7 @@ export default function ProductsPage() {
                           fontFamily: "var(--font-mono)",
                         }}
                       >
-                        ₹{Number(car.price).toLocaleString("en-IN")}
+                        {formatPrice(car.price)}
                       </td>
                       <td
                         style={{
@@ -437,7 +446,7 @@ export default function ProductsPage() {
               {[
                 { label: "Car Name", key: "name", type: "text", col: 2 },
                 { label: "Brand", key: "brand", type: "text", col: 1 },
-                { label: "Price (₹)", key: "price", type: "number", col: 1 },
+                { label: "Price (USD)", key: "price", type: "number", col: 1 },
                 {
                   label: "Original Price",
                   key: "originalPrice",

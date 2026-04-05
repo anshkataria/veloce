@@ -52,10 +52,12 @@ export default function OrdersPage() {
     filter === "all" ? orders : orders.filter((o) => o.status === filter);
 
   const formatPrice = (v) => {
-    const n = Number(v);
-    if (n >= 10000000) return `₹${(n / 10000000).toFixed(2)} Cr`;
-    if (n >= 100000) return `₹${(n / 100000).toFixed(1)} L`;
-    return `₹${n.toLocaleString("en-IN")}`;
+    const n = Number(v ?? 0);
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(n);
   };
 
   return (

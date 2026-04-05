@@ -102,6 +102,39 @@ export default function LoginPage() {
           >
             Sign in to manage your store
           </p>
+
+          <div
+            style={{
+              marginTop: "12px",
+              padding: "10px 12px",
+              borderRadius: "9px",
+              border: "1px solid var(--border)",
+              background: "var(--bg-input)",
+              textAlign: "left",
+              fontSize: "12px",
+              color: "var(--text-secondary)",
+              lineHeight: 1.6,
+            }}
+          >
+            <div
+              style={{
+                fontSize: "11px",
+                color: "var(--text-muted)",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                marginBottom: "4px",
+                fontWeight: 600,
+              }}
+            >
+              Admin Login
+            </div>
+            <div>
+              Email: <strong>admin@veloce.in</strong>
+            </div>
+            <div>
+              Password: <strong>admin123</strong>
+            </div>
+          </div>
         </div>
 
         <form
