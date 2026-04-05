@@ -125,6 +125,41 @@ npm run dev
 
 Admin runs on another Vite port (usually `http://localhost:5174`).
 
+## Docker (Run Everything)
+
+You can run the full stack (PostgreSQL + Spring Boot API + Storefront + Admin) with Docker Compose.
+
+From the project root:
+
+```bash
+docker compose up --build
+```
+
+Services:
+
+- Storefront: `http://localhost:5173`
+- Admin: `http://localhost:5174`
+- Backend API: `http://localhost:8080`
+- PostgreSQL: `localhost:5432`
+
+Run in detached mode:
+
+```bash
+docker compose up -d --build
+```
+
+Stop everything:
+
+```bash
+docker compose down
+```
+
+Stop and remove database volume too:
+
+```bash
+docker compose down -v
+```
+
 ## Demo Credentials
 
 ### Admin

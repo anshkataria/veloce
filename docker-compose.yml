@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: veloce-db
+    environment:
+      POSTGRES_DB: veloce_db
+      POSTGRES_USER: veloce_user
+      POSTGRES_PASSWORD: veloce123
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U veloce_user -d veloce_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: veloce-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/veloce_db
+      SPRING_DATASOURCE_USERNAME: veloce_user
+      SPRING_DATASOURCE_PASSWORD: veloce123
+      JWT_SECRET: veloce-super-secret-jwt-key-change-this-in-production-min-32-chars
+      JWT_EXPIRATION: 86400000
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  storefront:
+    build:
+      context: ./apps/storefront
+      dockerfile: Dockerfile
+    container_name: veloce-storefront
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+  admin:
+    build:
+      context: ./apps/admin
+      dockerfile: Dockerfile
+    container_name: veloce-admin
+    depends_on:
+      - backend
+    ports:
+      - "5174:80"
+
+volumes:
+  pgdata:
