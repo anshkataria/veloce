@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SlidersHorizontal, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import ProductCard from "../components/ProductCard";
-import { mockProducts } from "../data/mockProducts";
+import { carService } from "../services/carService";
 
 const CATEGORIES = ["all", "supercars", "sportscars", "luxury"];
 const SORT_OPTIONS = [
@@ -17,7 +18,6 @@ export default function ProductsPage() {
   const [sort, setSort] = useState("newest");
   const [search, setSearch] = useState("");
 
-  // read category from URL — ?category=suits
   const activeCategory = searchParams.get("category") || "all";
 
   const setCategory = (cat) => {
@@ -26,48 +26,46 @@ export default function ProductsPage() {
     setSearchParams(searchParams);
   };
 
-  const filtered = useMemo(() => {
-    let result = [...mockProducts];
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["cars", activeCategory, search, sort],
+    queryFn: () =>
+      carService
+        .getAll({
+          category: activeCategory === "all" ? undefined : activeCategory,
+          search: search || undefined,
+          sort,
+          size: 20,
+        })
+        .then((r) => r.data),
+    staleTime: 30000,
+  });
 
-    if (activeCategory !== "all")
-      result = result.filter((p) => p.category === activeCategory);
-
-    if (search.trim())
-      result = result.filter((p) =>
-        p.name.toLowerCase().includes(search.toLowerCase()),
-      );
-
-    if (sort === "price_asc") result.sort((a, b) => a.price - b.price);
-    else if (sort === "price_desc") result.sort((a, b) => b.price - a.price);
-
-    return result;
-  }, [activeCategory, search, sort]);
+  const cars = data?.content ?? [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Page header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-light text-gray-900 tracking-wide">
+        <h1
+          className="text-3xl font-light text-gray-900 tracking-wide"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
           {activeCategory === "all"
-            ? "All Products"
+            ? "All Cars"
             : activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)}
         </h1>
-        <p className="text-sm text-gray-400 mt-1">{filtered.length} products</p>
+        <p className="text-sm text-gray-400 mt-1">{cars.length} vehicles</p>
       </div>
 
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        {/* Search */}
         <input
           type="text"
-          placeholder="Search products..."
+          placeholder="Search by name or brand..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm
                      focus:outline-none focus:ring-1 focus:ring-gray-400"
         />
-
-        {/* Sort */}
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value)}
@@ -80,24 +78,20 @@ export default function ProductsPage() {
             </option>
           ))}
         </select>
-
-        {/* Filter toggle (mobile) */}
         <button
           onClick={() => setFiltersOpen((o) => !o)}
           className="sm:hidden flex items-center gap-2 border border-gray-200 rounded-full px-4 py-2 text-sm"
         >
-          <SlidersHorizontal size={14} />
-          Filters
+          <SlidersHorizontal size={14} /> Filters
         </button>
       </div>
 
       <div className="flex gap-8">
-        {/* ── SIDEBAR FILTERS (desktop always visible, mobile toggled) ── */}
+        {/* Sidebar */}
         <aside
           className={`${filtersOpen ? "block" : "hidden"} sm:block w-48 flex-shrink-0`}
         >
           <div className="sticky top-24 space-y-6">
-            {/* Category filter */}
             <div>
               <h3 className="text-xs font-medium text-gray-900 uppercase tracking-wider mb-3">
                 Category
@@ -113,29 +107,16 @@ export default function ProductsPage() {
                           : "text-gray-500 hover:text-gray-900"
                       }`}
                     >
-                      {cat === "all" ? "All Products" : cat}
+                      {cat === "all" ? "All Cars" : cat}
                     </button>
                   </li>
                 ))}
               </ul>
             </div>
-
-            {/* In stock filter */}
-            <div>
-              <h3 className="text-xs font-medium text-gray-900 uppercase tracking-wider mb-3">
-                Availability
-              </h3>
-              <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer">
-                <input type="checkbox" className="rounded" />
-                In Stock Only
-              </label>
-            </div>
-
-            {/* Clear filters */}
             {activeCategory !== "all" && (
               <button
                 onClick={() => setCategory("all")}
-                className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-900 transition-colors"
+                className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-900"
               >
                 <X size={12} /> Clear filters
               </button>
@@ -143,11 +124,31 @@ export default function ProductsPage() {
           </div>
         </aside>
 
-        {/* ── PRODUCT GRID ── */}
+        {/* Grid */}
         <div className="flex-1">
-          {filtered.length === 0 ? (
+          {isLoading && (
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-gray-100 rounded-xl aspect-[3/4] mb-3" />
+                  <div className="h-3 bg-gray-100 rounded w-2/3 mb-2" />
+                  <div className="h-3 bg-gray-100 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {isError && (
             <div className="text-center py-24">
-              <p className="text-gray-400 text-sm">No products found.</p>
+              <p className="text-gray-400 text-sm">
+                Failed to load cars. Is the backend running?
+              </p>
+            </div>
+          )}
+
+          {!isLoading && !isError && cars.length === 0 && (
+            <div className="text-center py-24">
+              <p className="text-gray-400 text-sm">No cars found.</p>
               <button
                 onClick={() => {
                   setSearch("");
@@ -158,10 +159,12 @@ export default function ProductsPage() {
                 Clear search
               </button>
             </div>
-          ) : (
+          )}
+
+          {!isLoading && cars.length > 0 && (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {filtered.map((p) => (
-                <ProductCard key={p.id} product={p} />
+              {cars.map((car) => (
+                <ProductCard key={car.id} product={car} />
               ))}
             </div>
           )}

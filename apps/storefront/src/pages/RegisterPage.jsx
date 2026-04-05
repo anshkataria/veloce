@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { authService } from "../services/authService";
+import useAuthStore from "../store/authStore";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const login = useAuthStore((s) => s.login);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -14,7 +17,7 @@ export default function RegisterPage() {
   const handleChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.password) {
       setError("Please fill in all fields");
@@ -28,9 +31,21 @@ export default function RegisterPage() {
       setError("Password must be at least 8 characters");
       return;
     }
-    // TODO: connect to backend register API
-    console.log("Register:", form);
-    navigate("/");
+
+    try {
+      const res = await authService.register(form);
+      login(
+        {
+          name: res.data.name,
+          email: res.data.email,
+          role: res.data.role,
+        },
+        res.data.token,
+      );
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.error || "Registration failed");
+    }
   };
 
   return (

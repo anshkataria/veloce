@@ -7,10 +7,21 @@ import {
   HeadphonesIcon,
 } from "lucide-react";
 import ProductCard from "../components/ProductCard";
-import { mockProducts, mockCategories } from "../data/mockProducts";
+import { useQuery } from "@tanstack/react-query";
+import { carService } from "../services/carService";
+import { mockCategories } from "../data/mockProducts";
 
 export default function HomePage() {
-  const featuredProducts = mockProducts.filter((p) => p.inStock).slice(0, 4);
+  const { data } = useQuery({
+    queryKey: ["cars", "featured"],
+    queryFn: () =>
+      carService.getAll({ size: 4, sort: "newest" }).then((r) => r.data),
+  });
+  const featuredProducts = (data?.content ?? []).map((car) => ({
+    ...car,
+    images: [car.imageUrl],
+    sizes: car.variants?.split(",") ?? [],
+  }));
 
   return (
     <div>

@@ -1,23 +1,38 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { authService } from "../services/authService";
+import useAuthStore from "../store/authStore";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const login = useAuthStore((s) => s.login);
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
 
   const handleChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: connect to backend auth API
     if (!form.email || !form.password) {
       setError("Please fill in all fields");
       return;
     }
-    console.log("Login:", form);
-    navigate("/");
+
+    try {
+      const res = await authService.login(form);
+      login(
+        {
+          name: res.data.name,
+          email: res.data.email,
+          role: res.data.role,
+        },
+        res.data.token,
+      );
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.error || "Invalid credentials");
+    }
   };
 
   return (
