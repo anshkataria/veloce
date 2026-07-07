@@ -44,11 +44,21 @@ public class OrderService {
             Car car = carRepository.findById(itemReq.getCarId())
                     .orElseThrow(() -> new RuntimeException("Car not found: " + itemReq.getCarId()));
 
+            int requestedQuantity = itemReq.getQuantity();
+            int availableStock = car.getStock() == null ? 0 : car.getStock();
+            if (!Boolean.TRUE.equals(car.getInStock()) || availableStock < requestedQuantity) {
+                throw new RuntimeException("Insufficient stock for " + car.getName());
+            }
+
+            int updatedStock = availableStock - requestedQuantity;
+            car.setStock(updatedStock);
+            car.setInStock(updatedStock > 0);
+
             return OrderItem.builder()
                     .order(order)
                     .car(car)
                     .variant(itemReq.getVariant())
-                    .quantity(itemReq.getQuantity())
+                    .quantity(requestedQuantity)
                     .priceAtPurchase(car.getPrice())
                     .build();
         }).toList();
