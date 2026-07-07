@@ -43,23 +43,23 @@ export default function LoginPage() {
             VELOCE MEMBER ACCESS
           </p>
           <h1
-            className="text-3xl font-light text-[#f2f4f3]"
+            className="text-3xl font-light text-[#17110d]"
             style={{ fontFamily: "var(--font-display)" }}
           >
             Welcome back
           </h1>
-          <p className="text-sm text-[#a9927d] mt-2">Sign in to your account</p>
+          <p className="text-sm text-[#7a6b5f] mt-2">Sign in to your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-[#49111c] text-[#f2f4f3] text-sm px-4 py-3 rounded-xl">
+            <div className="bg-[#f4e4e6] text-[#7f1d2d] text-sm px-4 py-3 rounded-xl">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-[#c7baac] mb-1.5 uppercase tracking-wide">
+            <label className="block text-xs font-semibold text-[#5f5148] mb-1.5 uppercase tracking-wide">
               Email
             </label>
             <input
@@ -67,20 +67,19 @@ export default function LoginPage() {
               name="email"
               value={form.email}
               onChange={handleChange}
-              placeholder="you@example.com"
-              className="w-full border border-[#5e503f] bg-[#0a0908]/70 text-[#f2f4f3] rounded-xl px-4 py-3 text-sm
-                         placeholder:text-[#7f7265] focus:outline-none focus:ring-1 focus:ring-[#a9927d]"
+              className="w-full border border-[#d7c5aa] bg-white/75 text-[#17110d] rounded-xl px-4 py-3 text-sm
+                         focus:outline-none focus:ring-1 focus:ring-[#b59663]"
             />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-medium text-[#c7baac] uppercase tracking-wide">
+              <label className="block text-xs font-semibold text-[#5f5148] uppercase tracking-wide">
                 Password
               </label>
               <a
                 href="#"
-                className="text-xs text-[#8e8072] hover:text-[#f2f4f3] transition-colors"
+                className="text-xs text-[#7a6b5f] hover:text-[#17110d] transition-colors"
               >
                 Forgot password?
               </a>
@@ -90,25 +89,24 @@ export default function LoginPage() {
               name="password"
               value={form.password}
               onChange={handleChange}
-              placeholder="••••••••"
-              className="w-full border border-[#5e503f] bg-[#0a0908]/70 text-[#f2f4f3] rounded-xl px-4 py-3 text-sm
-                         placeholder:text-[#7f7265] focus:outline-none focus:ring-1 focus:ring-[#a9927d]"
+              className="w-full border border-[#d7c5aa] bg-white/75 text-[#17110d] rounded-xl px-4 py-3 text-sm
+                         focus:outline-none focus:ring-1 focus:ring-[#b59663]"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full luxury-btn py-3.5 rounded-full text-sm font-medium mt-2"
+            className="w-full luxury-btn py-3.5 rounded-[8px] text-sm font-semibold mt-2"
           >
             Sign In
           </button>
         </form>
 
-        <p className="text-center text-sm text-[#a9927d] mt-6">
+        <p className="text-center text-sm text-[#7a6b5f] mt-6">
           Don't have an account?{" "}
           <Link
             to="/register"
-            className="text-[#f2f4f3] hover:text-[#a9927d] font-medium"
+            className="text-[#17110d] hover:text-[#7f1d2d] font-semibold"
           >
             Sign up
           </Link>
