@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Store } from "lucide-react";
+import { LockKeyhole, Store } from "lucide-react";
 import { authService } from "../services/authService";
 import useAuthStore from "../store/authStore";
 
@@ -49,7 +49,8 @@ export default function LoginPage() {
     <div
       style={{
         minHeight: "100vh",
-        background: "var(--bg-main)",
+        background:
+          "radial-gradient(circle at 18% 12%, rgba(181,150,99,0.22), transparent 28%), var(--bg-main)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -60,13 +61,14 @@ export default function LoginPage() {
         style={{
           background: "var(--bg-card)",
           border: "1px solid var(--border)",
-          borderRadius: "18px",
+          borderRadius: "22px",
           width: "100%",
-          maxWidth: "380px",
+          maxWidth: "420px",
           padding: "36px",
           display: "flex",
           flexDirection: "column",
           gap: "20px",
+          boxShadow: "0 24px 72px rgba(49, 38, 24, 0.14)",
         }}
       >
         <div style={{ textAlign: "center" }}>
@@ -75,7 +77,7 @@ export default function LoginPage() {
               width: "44px",
               height: "44px",
               background: "var(--text-primary)",
-              borderRadius: "12px",
+              borderRadius: "14px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -84,11 +86,31 @@ export default function LoginPage() {
           >
             <Store size={20} color="var(--bg-card)" />
           </div>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "6px 10px",
+              borderRadius: "999px",
+              border: "1px solid var(--border)",
+              background: "var(--bg-input)",
+              color: "var(--text-muted)",
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              marginBottom: "12px",
+            }}
+          >
+            <LockKeyhole size={12} />
+            Control room
+          </div>
           <h1
             style={{
-              fontSize: "18px",
-              fontWeight: 600,
+              fontSize: "22px",
+              fontWeight: 700,
               color: "var(--text-primary)",
+              letterSpacing: "0.04em",
             }}
           >
             VELOCE Admin
@@ -160,13 +182,11 @@ export default function LoginPage() {
               label: "Email",
               name: "email",
               type: "email",
-              placeholder: "admin@veloce.in",
             },
             {
               label: "Password",
               name: "password",
               type: "password",
-              placeholder: "••••••••",
             },
           ].map((f) => (
             <div key={f.name}>
@@ -186,7 +206,6 @@ export default function LoginPage() {
               <input
                 type={f.type}
                 value={form[f.name]}
-                placeholder={f.placeholder}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, [f.name]: e.target.value }))
                 }
