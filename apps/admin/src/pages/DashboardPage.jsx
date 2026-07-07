@@ -5,6 +5,7 @@ import {
   TrendingUp,
   ArrowUpRight,
 } from "lucide-react";
+import { createElement } from "react";
 import {
   AreaChart,
   Area,
@@ -38,8 +39,9 @@ const revenueData = [
 const card = {
   background: "var(--bg-card)",
   border: "1px solid var(--border)",
-  borderRadius: "14px",
+  borderRadius: "16px",
   padding: "20px",
+  boxShadow: "0 18px 48px rgba(49, 38, 24, 0.08)",
 };
 
 const formatPrice = (v) => {
@@ -75,32 +77,32 @@ export default function DashboardPage() {
       value: formatPrice(totalRevenue),
       change: "+18%",
       icon: TrendingUp,
-      color: "#f2f4f3",
-      colorBg: "#49111c",
+      color: "#fffaf2",
+      colorBg: "#17110d",
     },
     {
       label: "Orders",
       value: orders.length,
       change: "+12%",
       icon: ShoppingBag,
-      color: "#0a0908",
-      colorBg: "#a9927d",
+      color: "#17110d",
+      colorBg: "#d7c5aa",
     },
     {
       label: "Vehicles",
       value: totalCars,
       change: "+3",
       icon: Package,
-      color: "#f2f4f3",
-      colorBg: "#5e503f",
+      color: "#fffaf2",
+      colorBg: "#7f1d2d",
     },
     {
       label: "Customers",
       value: "—",
       change: "",
       icon: Users,
-      color: "#0a0908",
-      colorBg: "#f2f4f3",
+      color: "#17110d",
+      colorBg: "#fffaf2",
     },
   ];
 
@@ -123,7 +125,7 @@ export default function DashboardPage() {
             marginTop: "2px",
           }}
         >
-          Here's what's happening in VELOCE today.
+          Live operating view for inventory, revenue, and reservations.
         </p>
       </div>
 
@@ -135,7 +137,7 @@ export default function DashboardPage() {
           gap: "14px",
         }}
       >
-        {stats.map(({ label, value, change, icon: Icon, color, colorBg }) => (
+        {stats.map(({ label, value, change, icon, color, colorBg }) => (
           <div key={label} style={card}>
             <div
               style={{
@@ -167,7 +169,7 @@ export default function DashboardPage() {
                   justifyContent: "center",
                 }}
               >
-                <Icon size={15} color={color} />
+                {createElement(icon, { size: 15, color })}
               </div>
             </div>
             <div
