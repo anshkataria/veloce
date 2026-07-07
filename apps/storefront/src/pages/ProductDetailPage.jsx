@@ -1,14 +1,28 @@
 import { createElement, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ShoppingBag, ArrowLeft, Check, ShieldCheck, Truck, Wand2 } from "lucide-react";
+import {
+  Activity,
+  ArrowLeft,
+  Check,
+  Cog,
+  Gauge,
+  Route,
+  ShieldCheck,
+  ShoppingBag,
+  Timer,
+  Truck,
+  Wand2,
+  Zap,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import useCartStore from "../store/cartStore";
 import { carService } from "../services/carService";
 import { formatPrice } from "../utils/formatPrice";
 import { getCarImageByName } from "../utils/carImageMap";
-import { getDisplayInStock } from "../utils/catalogUtils";
+import { formatCategoryLabel, getDisplayInStock } from "../utils/catalogUtils";
 import { fadeUp, softReveal, staggerContainer } from "../utils/motionVariants";
+import { getVehicleGallery, getVehicleSpecs } from "../utils/vehicleDetails";
 
 const MotionDiv = motion.div;
 const MotionImg = motion.img;
@@ -20,6 +34,7 @@ export default function ProductDetailPage() {
   const addItem = useCartStore((s) => s.addItem);
 
   const [selectedVariant, setSelectedVariant] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [added, setAdded] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,7 +56,7 @@ export default function ProductDetailPage() {
   const imageUrl = car ? getCarImageByName(car.name, car.imageUrl) : "";
 
   const handleAddToCart = () => {
-    if (!selectedVariant) {
+    if (!activeVariant) {
       setError("Please select a variant");
       return;
     }
@@ -54,7 +69,7 @@ export default function ProductDetailPage() {
       images: [imageUrl],
       sizes: car.variants?.split(",") ?? [],
     };
-    addItem(product, selectedVariant, 1);
+    addItem(product, activeVariant, 1);
     setAdded(true);
     setError("");
     setTimeout(() => setAdded(false), 2000);
@@ -87,11 +102,34 @@ export default function ProductDetailPage() {
       </div>
     );
 
-  const variants = car.variants?.split(",").map((v) => v.trim()) ?? [];
+  const variants =
+    car.variants
+      ?.split(",")
+      .map((v) => v.trim())
+      .filter(Boolean) ?? [];
   const discount = car.originalPrice
     ? Math.round(((car.originalPrice - car.price) / car.originalPrice) * 100)
     : 0;
   const isInStock = getDisplayInStock(car.name, car.inStock, car.stock);
+  const activeVariant = variants.includes(selectedVariant)
+    ? selectedVariant
+    : null;
+  const gallery = getVehicleGallery(car.name, imageUrl);
+  const selectedImage = gallery[selectedImageIndex] ?? gallery[0];
+  const specs = getVehicleSpecs(car.name, car.category);
+  const specHighlights = [
+    [Zap, "Power", specs.horsepower],
+    [Timer, "0-100 km/h", specs.acceleration],
+    [Gauge, "Top speed", specs.topSpeed],
+  ];
+  const specGrid = [
+    [Activity, "Engine", specs.engine],
+    [Zap, "Horsepower", specs.horsepower],
+    [Timer, "0-100 km/h", specs.acceleration],
+    [Cog, "Transmission", specs.transmission],
+    [Route, "Drivetrain", specs.drivetrain],
+    [Gauge, "Top speed", specs.topSpeed],
+  ];
 
   return (
     <MotionDiv
@@ -107,156 +145,281 @@ export default function ProductDetailPage() {
         <ArrowLeft size={16} /> Back
       </button>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
-        {/* Image */}
-        <MotionDiv
-          className="bespoke-frame aspect-[3/4] rounded-[2px] overflow-hidden bg-[#fffaf2] shadow-[0_24px_70px_rgba(49,38,24,0.16)]"
-          variants={softReveal}
-        >
-          <MotionImg
-            src={imageUrl}
-            alt={car.name}
-            className="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.03]"
-            initial={{ scale: 1.08, clipPath: "inset(0 0 18% 0)" }}
-            animate={{ scale: 1, clipPath: "inset(0 0 0% 0)" }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          />
-        </MotionDiv>
-
-        {/* Details */}
-        <MotionDiv
-          className="bespoke-frame flex flex-col gap-6 luxury-panel rounded-[2px] p-6 lg:p-8"
-          variants={fadeUp}
-        >
-          <div>
-            <p className="text-xs text-[#7a6b5f] uppercase tracking-widest mb-2">
-              {car.brand}
-            </p>
-            <h1
-              className="text-3xl sm:text-4xl font-light text-[#17110d] leading-snug"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              {car.name}
-            </h1>
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.1fr)_430px] lg:gap-12">
+        <MotionDiv className="space-y-4" variants={softReveal}>
+          <div className="bespoke-frame relative aspect-[16/11] overflow-hidden rounded-[2px] bg-[#fffaf2] shadow-[0_24px_70px_rgba(49,38,24,0.16)] sm:aspect-[16/10]">
+            <AnimatePresence mode="wait">
+              <MotionImg
+                key={selectedImage.label}
+                src={selectedImage.src}
+                alt={`${car.name} ${selectedImage.label}`}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: selectedImage.objectPosition }}
+                initial={{ opacity: 0, scale: 1.06, clipPath: "inset(0 0 12% 0)" }}
+                animate={{ opacity: 1, scale: 1, clipPath: "inset(0 0 0% 0)" }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+              />
+            </AnimatePresence>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#17110d]/45 via-transparent to-white/10" />
+            <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4 text-white">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.24em] text-white/75">
+                  Gallery View
+                </p>
+                <p className="mt-1 text-xl font-semibold">
+                  {selectedImage.label}
+                </p>
+              </div>
+              <p className="hidden max-w-[15rem] text-right text-xs text-white/78 sm:block">
+                {selectedImage.note}
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-2xl font-semibold text-[#17110d]">
-              {formatPrice(car.price)}
-            </span>
-            {car.originalPrice > car.price && (
-              <>
-                <span className="text-base text-[#7a6b5f] line-through">
-                  {formatPrice(car.originalPrice)}
-                </span>
-                <span className="text-sm bg-[#f4e4e6] text-[#7f1d2d] px-2 py-0.5 rounded-full font-medium">
-                  {discount}% off
-                </span>
-              </>
-            )}
+          <div className="grid grid-cols-3 gap-3">
+            {gallery.map((item, index) => {
+              const active = selectedImageIndex === index;
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => setSelectedImageIndex(index)}
+                  aria-pressed={active}
+                  className={`group overflow-hidden rounded-[2px] border bg-[#fffaf2] text-left transition-all ${
+                    active
+                      ? "border-[#17110d] shadow-[0_14px_34px_rgba(49,38,24,0.14)]"
+                      : "border-[#d7c5aa] hover:border-[#b59663]"
+                  }`}
+                >
+                  <img
+                    src={item.src}
+                    alt={`${car.name} ${item.label} thumbnail`}
+                    className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    style={{ objectPosition: item.objectPosition }}
+                  />
+                  <span className="block px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[#17110d]">
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          <p className="text-sm text-[#5f5148] leading-relaxed">
-            {car.description}
-          </p>
-
-          <div className="bespoke-frame grid grid-cols-3 rounded-[2px] bg-white/50">
-            {[
-              ["Category", car.category?.toLowerCase()],
-              ["Stock", isInStock ? `${car.stock} ready` : "Unavailable"],
-              ["Status", car.isNew ? "New arrival" : "Certified"],
-            ].map(([label, value], index) => (
+          <div className="grid gap-3 sm:grid-cols-3">
+            {specHighlights.map(([icon, label, value]) => (
               <div
                 key={label}
-                className={`p-3 ${index > 0 ? "border-l border-[#d7c5aa]" : ""}`}
+                className="bespoke-frame rounded-[2px] bg-white/55 p-4"
               >
+                <div className="mb-3 inline-flex rounded-lg border border-[#d7c5aa] bg-[#fffaf2] p-2 text-[#7f1d2d]">
+                  {createElement(icon, { size: 16 })}
+                </div>
                 <p className="text-[10px] uppercase text-[#7a6b5f]">{label}</p>
-                <p className="mt-1 text-xs font-semibold capitalize text-[#17110d]">
+                <p className="mt-1 text-sm font-semibold text-[#17110d]">
                   {value}
                 </p>
               </div>
             ))}
           </div>
+        </MotionDiv>
 
-          {/* Variant selector */}
-          {variants.length > 0 && (
+        <MotionDiv
+          className="bespoke-frame luxury-panel rounded-[2px] p-6 lg:sticky lg:top-24 lg:self-start"
+          variants={fadeUp}
+        >
+          <div className="flex flex-col gap-6">
             <div>
-              <p className="text-sm font-semibold text-[#17110d] mb-3">
-                Choose configuration
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {variants.map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => {
-                      setSelectedVariant(v);
-                      setError("");
-                    }}
-                    className={`px-4 py-2 text-sm rounded-lg border transition-all ${
-                      selectedVariant === v
-                        ? "bg-[#17110d] text-white border-[#17110d]"
-                        : "bg-white/60 text-[#5f5148] border-[#d7c5aa] hover:border-[#b59663] hover:text-[#17110d]"
-                    }`}
-                  >
-                    {v}
-                  </button>
-                ))}
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-[#d7c5aa] bg-white/55 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[#7a6b5f]">
+                  {car.brand}
+                </span>
+                <span className="rounded-full border border-[#d7c5aa] bg-white/55 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[#7a6b5f]">
+                  {formatCategoryLabel(car.category)}
+                </span>
               </div>
-              {error && <p className="text-xs text-rose-500 mt-2">{error}</p>}
-            </div>
-          )}
-
-          <button
-            onClick={handleAddToCart}
-            disabled={!isInStock}
-            className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-[8px] text-sm font-semibold transition-all ${
-              !isInStock
-                ? "bg-[#eadcc8] text-[#7a6b5f] cursor-not-allowed"
-                : added
-                  ? "bg-green-600 text-white"
-                  : "bg-[#17110d] text-white hover:bg-[#7f1d2d] hover:-translate-y-0.5"
-            }`}
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <MotionSpan
-                key={added ? "added" : "idle"}
-                className="inline-flex items-center justify-center gap-2"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.18 }}
+              <h1
+                className="text-3xl font-light leading-snug text-[#17110d] sm:text-4xl"
+                style={{ fontFamily: "var(--font-display)" }}
               >
-                {added ? (
+                {car.name}
+              </h1>
+            </div>
+
+            <div>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-2xl font-semibold text-[#17110d]">
+                  {formatPrice(car.price)}
+                </span>
+                {car.originalPrice > car.price && (
                   <>
-                    <Check size={16} /> Added to Cart
-                  </>
-                ) : (
-                  <>
-                    <ShoppingBag size={16} />{" "}
-                    {isInStock ? "Add to Cart" : "Out of Stock"}
+                    <span className="text-base text-[#7a6b5f] line-through">
+                      {formatPrice(car.originalPrice)}
+                    </span>
+                    <span className="rounded-full bg-[#f4e4e6] px-2 py-0.5 text-sm font-medium text-[#7f1d2d]">
+                      {discount}% off
+                    </span>
                   </>
                 )}
-              </MotionSpan>
-            </AnimatePresence>
-          </button>
-
-          <div className="grid gap-3 border-t border-[#d7c5aa] pt-6 sm:grid-cols-3">
-            {[
-              [Truck, "Enclosed delivery"],
-              [ShieldCheck, "Verified inventory"],
-              [Wand2, "Concierge support"],
-            ].map(([icon, text]) => (
-              <div key={text} className="flex items-center gap-2 text-xs text-[#7a6b5f]">
-                {createElement(icon, {
-                  size: 15,
-                  className: "text-[#7f1d2d]",
-                })}
-                {text}
               </div>
-            ))}
+              <p className="mt-2 text-xs uppercase tracking-[0.2em] text-[#7a6b5f]">
+                Reservation price
+              </p>
+            </div>
+
+            <p className="text-sm leading-7 text-[#5f5148]">
+              {car.description}
+            </p>
+
+            <div className="bespoke-frame grid grid-cols-3 rounded-[2px] bg-white/50">
+              {[
+                ["Stock", isInStock ? `${car.stock} ready` : "Unavailable"],
+                ["Status", car.isNew ? "New arrival" : "Certified"],
+                ["Handoff", "Concierge"],
+              ].map(([label, value], index) => (
+                <div
+                  key={label}
+                  className={`p-3 ${index > 0 ? "border-l border-[#d7c5aa]" : ""}`}
+                >
+                  <p className="text-[10px] uppercase text-[#7a6b5f]">
+                    {label}
+                  </p>
+                  <p className="mt-1 text-xs font-semibold capitalize text-[#17110d]">
+                    {value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {variants.length > 0 && (
+              <div>
+                <p className="mb-3 text-sm font-semibold text-[#17110d]">
+                  Choose configuration
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {variants.map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => {
+                        setSelectedVariant(v);
+                        setError("");
+                      }}
+                      className={`rounded-lg border px-4 py-2 text-sm transition-all ${
+                        activeVariant === v
+                          ? "border-[#17110d] bg-[#17110d] text-white"
+                          : "border-[#d7c5aa] bg-white/60 text-[#5f5148] hover:border-[#b59663] hover:text-[#17110d]"
+                      }`}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
+                {error && <p className="mt-2 text-xs text-rose-500">{error}</p>}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!isInStock}
+              className={`flex w-full items-center justify-center gap-2 rounded-[8px] py-3.5 text-sm font-semibold transition-all ${
+                !isInStock
+                  ? "cursor-not-allowed bg-[#eadcc8] text-[#7a6b5f]"
+                  : added
+                    ? "bg-green-600 text-white"
+                    : "bg-[#17110d] text-white hover:-translate-y-0.5 hover:bg-[#7f1d2d]"
+              }`}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                <MotionSpan
+                  key={added ? "added" : "idle"}
+                  className="inline-flex items-center justify-center gap-2"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  {added ? (
+                    <>
+                      <Check size={16} /> Added to Cart
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag size={16} />{" "}
+                      {isInStock ? "Reserve Vehicle" : "Out of Stock"}
+                    </>
+                  )}
+                </MotionSpan>
+              </AnimatePresence>
+            </button>
+
+            <div className="grid gap-3 border-t border-[#d7c5aa] pt-6 sm:grid-cols-3">
+              {[
+                [Truck, "Enclosed delivery"],
+                [ShieldCheck, "Verified inventory"],
+                [Wand2, "Concierge support"],
+              ].map(([icon, text]) => (
+                <div
+                  key={text}
+                  className="flex items-center gap-2 text-xs text-[#7a6b5f]"
+                >
+                  {createElement(icon, {
+                    size: 15,
+                    className: "text-[#7f1d2d]",
+                  })}
+                  {text}
+                </div>
+              ))}
+            </div>
           </div>
         </MotionDiv>
       </div>
+
+      <MotionDiv
+        className="mt-16"
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-80px" }}
+      >
+        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="luxury-chip mb-3">Vehicle Specification</p>
+            <h2
+              className="text-3xl font-light text-[#17110d]"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Performance and configuration
+            </h2>
+          </div>
+          <p className="max-w-xl text-sm leading-7 text-[#5f5148]">
+            Core figures are presented for quick inspection before the full
+            concierge handoff and verification workflow.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {specGrid.map(([icon, label, value]) => (
+            <div
+              key={label}
+              className="bespoke-frame flex items-start gap-4 rounded-[2px] bg-[#fffaf2]/80 p-5 hover-lift"
+            >
+              <div className="rounded-lg border border-[#d7c5aa] bg-white/65 p-2 text-[#7f1d2d]">
+                {createElement(icon, { size: 18 })}
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7a6b5f]">
+                  {label}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-[#17110d]">
+                  {value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </MotionDiv>
 
       {/* Related */}
       {related.length > 0 && (
