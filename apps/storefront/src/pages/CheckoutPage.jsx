@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useCartStore from "../store/cartStore";
 import { formatPrice } from "../utils/formatPrice";
+import { orderService } from "../services/orderService";
 
 export default function CheckoutPage() {
   const { items, getTotalPrice, clearCart } = useCartStore();
@@ -17,6 +18,7 @@ export default function CheckoutPage() {
     pincode: "",
   });
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -25,21 +27,59 @@ export default function CheckoutPage() {
   const shipping = total >= 999 ? 0 : 99;
   const grandTotal = total + shipping;
 
-  const handlePlaceOrder = (e) => {
+  useEffect(() => {
+    if (items.length === 0) {
+      navigate("/cart", { replace: true });
+    }
+  }, [items.length, navigate]);
+
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
+    setError("");
+
+    const token = localStorage.getItem("veloce_token");
+    if (!token) {
+      navigate("/login", { state: { from: "/checkout" } });
+      return;
+    }
+
     const empty = Object.values(form).some((v) => !v.trim());
     if (empty) {
       setError("Please fill in all fields");
       return;
     }
-    // TODO: call order API + Razorpay
-    console.log("Placing order:", { form, items, grandTotal });
-    clearCart();
-    navigate("/orders");
+
+    const payload = {
+      shippingName: form.name.trim(),
+      shippingEmail: form.email.trim(),
+      shippingPhone: form.phone.trim(),
+      shippingAddress: form.address.trim(),
+      shippingCity: form.city.trim(),
+      shippingState: form.state.trim(),
+      shippingPincode: form.pincode.trim(),
+      items: items.map(({ product, size, quantity }) => ({
+        carId: product.id,
+        variant: size,
+        quantity,
+      })),
+    };
+
+    try {
+      setIsSubmitting(true);
+      await orderService.create(payload);
+      clearCart();
+      navigate("/orders", { replace: true });
+    } catch (err) {
+      setError(
+        err.response?.data?.error ||
+          "We couldn't place your order. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (items.length === 0) {
-    navigate("/cart");
     return null;
   }
 
@@ -54,20 +94,23 @@ export default function CheckoutPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <h1 className="text-2xl font-light text-gray-900 mb-8">Checkout</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 fade-in-up">
+      <div className="mb-8">
+        <p className="luxury-chip mb-3">Secure Handoff</p>
+        <h1 className="text-3xl font-light text-[#17110d]">Checkout</h1>
+      </div>
 
       <form onSubmit={handlePlaceOrder}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* ── SHIPPING FORM ── */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-gray-50 rounded-2xl p-6">
-              <h2 className="text-sm font-medium text-gray-900 uppercase tracking-wide mb-5">
+            <div className="bespoke-frame luxury-panel rounded-[2px] p-6">
+              <h2 className="text-sm font-semibold text-[#17110d] uppercase tracking-wide mb-5">
                 Shipping Details
               </h2>
 
               {error && (
-                <div className="bg-rose-50 text-rose-600 text-sm px-4 py-3 rounded-xl mb-4">
+                <div className="bg-[#f4e4e6] text-[#7f1d2d] text-sm px-4 py-3 rounded-xl mb-4">
                   {error}
                 </div>
               )}
@@ -78,7 +121,7 @@ export default function CheckoutPage() {
                     key={field.name}
                     className={field.col === 2 ? "col-span-2" : "col-span-1"}
                   >
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5 uppercase tracking-wide">
+                    <label className="block text-xs font-semibold text-[#5f5148] mb-1.5 uppercase tracking-wide">
                       {field.label}
                     </label>
                     <input
@@ -86,29 +129,29 @@ export default function CheckoutPage() {
                       name={field.name}
                       value={form[field.name]}
                       onChange={handleChange}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm
-                                 focus:outline-none focus:ring-1 focus:ring-gray-400 bg-white"
+                      className="w-full border border-[#d7c5aa] rounded-[10px] px-4 py-3 text-sm text-[#17110d]
+                                 focus:outline-none focus:ring-1 focus:ring-[#b59663] bg-white/75 transition-shadow"
                     />
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Payment placeholder */}
-            <div className="bg-gray-50 rounded-2xl p-6">
-              <h2 className="text-sm font-medium text-gray-900 uppercase tracking-wide mb-3">
+            <div className="bespoke-frame luxury-panel rounded-[2px] p-6">
+              <h2 className="text-sm font-semibold text-[#17110d] uppercase tracking-wide mb-3">
                 Payment
               </h2>
-              <div className="border border-dashed border-gray-300 rounded-xl p-4 text-center text-sm text-gray-400">
-                Razorpay integration coming after backend is ready
+              <div className="bespoke-frame rounded-[2px] bg-white/45 p-4 text-center text-sm text-[#7a6b5f]">
+                Reservation orders are recorded after account verification. A
+                payment provider can be connected before public launch.
               </div>
             </div>
           </div>
 
           {/* ── ORDER SUMMARY ── */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-50 rounded-2xl p-6 sticky top-24 space-y-4">
-              <h2 className="text-base font-medium text-gray-900">
+            <div className="bespoke-frame luxury-panel rounded-[2px] p-6 sticky top-24 space-y-4">
+              <h2 className="text-base font-semibold text-[#17110d]">
                 Your Order
               </h2>
 
@@ -118,16 +161,16 @@ export default function CheckoutPage() {
                     <img
                       src={product.images[0]}
                       alt={product.name}
-                      className="w-14 h-18 object-cover rounded-lg flex-shrink-0"
+                      className="w-14 h-18 object-cover rounded-lg flex-shrink-0 border border-[#d7c5aa]"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-900 truncate">
+                      <p className="text-xs font-semibold text-[#17110d] truncate">
                         {product.name}
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        Size: {size} · Qty: {quantity}
+                      <p className="text-xs text-[#7a6b5f] mt-0.5">
+                        Variant: {size} · Qty: {quantity}
                       </p>
-                      <p className="text-xs font-semibold text-gray-900 mt-1">
+                      <p className="text-xs font-semibold text-[#17110d] mt-1">
                         {formatPrice(product.price * quantity)}
                       </p>
                     </div>
@@ -135,12 +178,12 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              <div className="border-t border-gray-200 pt-4 space-y-2 text-sm">
-                <div className="flex justify-between text-gray-600">
+              <div className="border-t border-[#d7c5aa] pt-4 space-y-2 text-sm">
+                <div className="flex justify-between text-[#5f5148]">
                   <span>Subtotal</span>
                   <span>{formatPrice(total)}</span>
                 </div>
-                <div className="flex justify-between text-gray-600">
+                <div className="flex justify-between text-[#5f5148]">
                   <span>Shipping</span>
                   <span>
                     {shipping === 0 ? (
@@ -150,7 +193,7 @@ export default function CheckoutPage() {
                     )}
                   </span>
                 </div>
-                <div className="flex justify-between font-semibold text-gray-900 pt-2 border-t border-gray-200">
+                <div className="flex justify-between font-semibold text-[#17110d] pt-2 border-t border-[#d7c5aa]">
                   <span>Total</span>
                   <span>{formatPrice(grandTotal)}</span>
                 </div>
@@ -158,10 +201,11 @@ export default function CheckoutPage() {
 
               <button
                 type="submit"
-                className="w-full bg-gray-900 text-white py-3.5 rounded-full text-sm font-medium
-                           hover:bg-gray-700 transition-colors"
+                disabled={isSubmitting}
+                className="w-full luxury-btn py-3.5 rounded-[8px] text-sm font-semibold
+                           disabled:cursor-not-allowed disabled:bg-[#d7c5aa] disabled:border-[#d7c5aa]"
               >
-                Place Order
+                {isSubmitting ? "Placing Order..." : "Place Order"}
               </button>
             </div>
           </div>
