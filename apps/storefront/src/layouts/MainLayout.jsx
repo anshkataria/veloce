@@ -1,8 +1,11 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useState } from "react";
+
+const MotionMain = motion.main;
 
 function ScrollToTop() {
   const { pathname, search } = useLocation();
@@ -15,6 +18,7 @@ function ScrollToTop() {
 }
 
 export default function MainLayout() {
+  const location = useLocation();
   const [showIntro, setShowIntro] = useState(() => {
     return sessionStorage.getItem("veloce_intro_seen") !== "true";
   });
@@ -41,9 +45,18 @@ export default function MainLayout() {
       )}
       <ScrollToTop />
       <Navbar />
-      <main className="flex-1">
-        <Outlet />
-      </main>
+      <AnimatePresence mode="wait" initial={false}>
+        <MotionMain
+          key={`${location.pathname}${location.search}`}
+          className="flex-1"
+          initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+          transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <Outlet />
+        </MotionMain>
+      </AnimatePresence>
       <Footer />
     </div>
   );
