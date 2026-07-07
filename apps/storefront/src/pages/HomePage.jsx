@@ -1,5 +1,6 @@
-import { createElement } from "react";
+import { createElement, useRef } from "react";
 import { Link } from "react-router-dom";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
   RefreshCw,
@@ -14,6 +15,13 @@ import { carService } from "../services/carService";
 import { mockCategories } from "../data/mockProducts";
 import { getCarImageByName } from "../utils/carImageMap";
 import { getDisplayInStock } from "../utils/catalogUtils";
+import { fadeUp, softReveal, staggerContainer } from "../utils/motionVariants";
+
+const MotionDiv = motion.div;
+const MotionH1 = motion.h1;
+const MotionImg = motion.img;
+const MotionP = motion.p;
+const MotionSection = motion.section;
 
 const trustItems = [
   {
@@ -39,6 +47,14 @@ const trustItems = [
 ];
 
 export default function HomePage() {
+  const heroRef = useRef(null);
+  const shouldReduceMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const heroImageY = useTransform(scrollYProgress, [0, 1], [0, 90]);
+  const heroTextY = useTransform(scrollYProgress, [0, 1], [0, -28]);
   const categoryImages = {
     supercars: "/images/category-supercars.jpg",
     sportscars: "/images/category-sportscars.jpg",
@@ -69,37 +85,60 @@ export default function HomePage() {
   return (
     <div>
       {/* ───── HERO ───── */}
-      <section className="relative min-h-[680px] flex items-center overflow-hidden bg-[#f8f3ea]">
-        <img
+      <MotionSection
+        ref={heroRef}
+        className="relative min-h-[680px] flex items-center overflow-hidden bg-[#f8f3ea]"
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+      >
+        <MotionImg
           src="/images/f40.jpg"
           alt="Hero"
           className="absolute inset-0 w-full h-full object-cover object-center"
+          style={{ y: shouldReduceMotion ? 0 : heroImageY }}
+          initial={{ scale: 1.08, opacity: 0.86 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.35, ease: [0.22, 1, 0.36, 1] }}
         />
         {/* dark overlay so text is readable */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#fffaf2]/92 via-[#fffaf2]/66 to-[#17110d]/10" />
         <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#f8f3ea] to-transparent" />
 
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <MotionDiv
+          className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
+          style={{ y: shouldReduceMotion ? 0 : heroTextY }}
+          variants={staggerContainer}
+        >
           <div className="max-w-3xl">
-            <p className="luxury-chip mb-6">Grand Touring Collection</p>
-            <p className="text-[#7a6b5f] text-[11px] tracking-[0.28em] uppercase mb-3">
+            <MotionP className="luxury-chip mb-6" variants={fadeUp}>
+              Grand Touring Collection
+            </MotionP>
+            <MotionP
+              className="text-[#7a6b5f] text-[11px] tracking-[0.28em] uppercase mb-3"
+              variants={fadeUp}
+            >
               Private Inventory
-            </p>
-            <h1
+            </MotionP>
+            <MotionH1
               style={{ fontFamily: "var(--font-display)" }}
               className="text-5xl sm:text-6xl lg:text-7xl font-light text-[#17110d] leading-[1.02] mb-6"
+              variants={fadeUp}
             >
               Curated machines for
               <br />
               <span className="font-normal text-4xl sm:text-5xl lg:text-6xl uppercase">
                 extraordinary drives
               </span>
-            </h1>
-            <p className="max-w-2xl text-[#5f5148] text-base sm:text-lg mb-8 leading-8">
+            </MotionH1>
+            <MotionP
+              className="max-w-2xl text-[#5f5148] text-base sm:text-lg mb-8 leading-8"
+              variants={fadeUp}
+            >
               Browse verified supercars, sportscars, and luxury vehicles with a
               complete commerce journey from first inspection to order history.
-            </p>
-            <div className="flex flex-wrap gap-4">
+            </MotionP>
+            <MotionDiv className="flex flex-wrap gap-4" variants={fadeUp}>
               <Link
                 to="/products"
                 className="luxury-btn inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-[8px]"
@@ -112,10 +151,13 @@ export default function HomePage() {
               >
                 View Supercars <Gauge size={16} />
               </Link>
-            </div>
+            </MotionDiv>
           </div>
 
-          <div className="mt-14 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[10px] border border-[#d7c5aa] bg-white/58 backdrop-blur shadow-[0_18px_50px_rgba(49,38,24,0.12)]">
+          <MotionDiv
+            className="mt-14 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[10px] border border-[#d7c5aa] bg-white/58 backdrop-blur shadow-[0_18px_50px_rgba(49,38,24,0.12)]"
+            variants={softReveal}
+          >
             {heroStats.map((stat, index) => (
               <div
                 key={stat.label}
@@ -129,13 +171,16 @@ export default function HomePage() {
                 </p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
+          </MotionDiv>
+        </MotionDiv>
+      </MotionSection>
 
-      <section
+      <MotionSection
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 section-reveal"
-        style={{ animationDelay: "120ms" }}
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-8">
           <div>
@@ -154,9 +199,16 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <MotionDiv
+          className="grid grid-cols-1 sm:grid-cols-3 gap-5"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+        >
           {mockCategories.map((cat) => (
-            <Link
+            <MotionDiv key={cat.id} variants={softReveal}>
+              <Link
               key={cat.id}
               to={`/products?category=${cat.slug}`}
               className="group bespoke-frame relative overflow-hidden rounded-[2px] aspect-[3/4] bg-[#fffaf2] hover-lift"
@@ -175,14 +227,18 @@ export default function HomePage() {
                   {cat.count} curated listings
                 </p>
               </div>
-            </Link>
+              </Link>
+            </MotionDiv>
           ))}
-        </div>
-      </section>
+        </MotionDiv>
+      </MotionSection>
 
-      <section
+      <MotionSection
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 section-reveal"
-        style={{ animationDelay: "220ms" }}
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-8">
           <div>
@@ -201,17 +257,26 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+        <MotionDiv
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+        >
           {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
-        </div>
-      </section>
+        </MotionDiv>
+      </MotionSection>
 
       {/* ───── TRUST STRIP ───── */}
-      <section
+      <MotionSection
         className="border-t border-[#d7c5aa] bg-[#fffaf2]/70 section-reveal"
-        style={{ animationDelay: "320ms" }}
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-80px" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -234,7 +299,7 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-      </section>
+      </MotionSection>
     </div>
   );
 }
