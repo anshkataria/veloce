@@ -29,7 +29,7 @@ export default function MainLayout() {
     const timer = window.setTimeout(() => {
       sessionStorage.setItem("veloce_intro_seen", "true");
       setShowIntro(false);
-    }, 2100);
+    }, 950);
 
     return () => window.clearTimeout(timer);
   }, [showIntro]);
@@ -40,7 +40,6 @@ export default function MainLayout() {
         <div className="veloce-intro" aria-hidden="true">
           <div className="veloce-intro__line" />
           <div className="veloce-intro__word">VELOCE</div>
-          <div className="veloce-intro__caption">Private Motor Atelier</div>
         </div>
       )}
       <ScrollToTop />

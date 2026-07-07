@@ -1,20 +1,20 @@
-import { createElement, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import {
-  ArrowRight,
-  RefreshCw,
-  Shield,
-  HeadphonesIcon,
-  Gauge,
-  Globe2,
-} from "lucide-react";
-import ProductCard from "../components/ProductCard";
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { carService } from "../services/carService";
 import { mockCategories } from "../data/mockProducts";
 import { getCarImageByName } from "../utils/carImageMap";
 import { getDisplayInStock } from "../utils/catalogUtils";
+import { formatPrice } from "../utils/formatPrice";
 import { fadeUp, softReveal, staggerContainer } from "../utils/motionVariants";
 
 const MotionDiv = motion.div;
@@ -23,28 +23,255 @@ const MotionImg = motion.img;
 const MotionP = motion.p;
 const MotionSection = motion.section;
 
-const trustItems = [
-  {
-    icon: Globe2,
-    title: "Worldwide Delivery",
-    desc: "Enclosed transport coordination for every handoff",
-  },
-  {
-    icon: RefreshCw,
-    title: "7-Day Returns",
-    desc: "Review window for private-client confidence",
-  },
-  {
-    icon: Shield,
-    title: "Verified Inventory",
-    desc: "Vehicle data, stock state, and pricing kept aligned",
-  },
-  {
-    icon: HeadphonesIcon,
-    title: "Concierge Support",
-    desc: "A direct path from interest to reservation",
-  },
-];
+const categoryImages = {
+  supercars: "/images/category-supercars.jpg",
+  sportscars: "/images/category-sportscars.jpg",
+  luxury: "/images/category-luxury.jpg",
+};
+
+function splitVehicleName(product) {
+  const brand = product.brand || product.name?.split(" ")[0] || "Vehicle";
+  const model = product.name?.startsWith(brand)
+    ? product.name.slice(brand.length).trim()
+    : product.name;
+
+  return { brand, model: model || product.name };
+}
+
+function VeloceArrow({ className = "" }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 34 12"
+      fill="none"
+      className={`h-3 w-8 transition-transform duration-[360ms] ease-[var(--ease-premium)] group-hover:translate-x-1.5 ${className}`}
+    >
+      <path
+        d="M1 6H31"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M26.5 1.5L31 6L26.5 10.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ContextCursor() {
+  const shouldReduceMotion = useReducedMotion();
+  const [enabled, setEnabled] = useState(false);
+  const [pointerInside, setPointerInside] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
+  const [hoverMode, setHoverMode] = useState("default");
+  const pointerInsideRef = useRef(false);
+  const hoverModeRef = useRef("default");
+  const mouseX = useMotionValue(-100);
+  const mouseY = useMotionValue(-100);
+  const ringX = useSpring(mouseX, { stiffness: 300, damping: 34, mass: 0.55 });
+  const ringY = useSpring(mouseY, { stiffness: 300, damping: 34, mass: 0.55 });
+
+  useEffect(() => {
+    if (shouldReduceMotion) return undefined;
+    const query = window.matchMedia("(pointer: fine)");
+    const updateEnabled = () => setEnabled(query.matches);
+    updateEnabled();
+    query.addEventListener("change", updateEnabled);
+
+    const handleMove = (event) => {
+      if (!pointerInsideRef.current) {
+        pointerInsideRef.current = true;
+        setPointerInside(true);
+      }
+      const target = event.target instanceof Element ? event.target : null;
+      const explicitCursor = target?.closest("[data-cursor]");
+      const interactive = target?.closest("a,button");
+      const nextMode = explicitCursor?.dataset.cursor || (interactive ? "link" : "default");
+      if (hoverModeRef.current !== nextMode) {
+        hoverModeRef.current = nextMode;
+        setHoverMode(nextMode);
+      }
+      mouseX.set(event.clientX);
+      mouseY.set(event.clientY);
+    };
+    const handleLeave = () => {
+      pointerInsideRef.current = false;
+      hoverModeRef.current = "default";
+      setPointerInside(false);
+      setHoverMode("default");
+    };
+    const handleVisibilityChange = () => {
+      if (document.hidden) handleLeave();
+    };
+    const handleDown = () => setIsPressed(true);
+    const handleUp = () => setIsPressed(false);
+    document.addEventListener("pointermove", handleMove, { passive: true });
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("pointerdown", handleDown);
+    document.addEventListener("pointerup", handleUp);
+    window.addEventListener("blur", handleLeave);
+
+    return () => {
+      query.removeEventListener("change", updateEnabled);
+      document.removeEventListener("pointermove", handleMove);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("pointerdown", handleDown);
+      document.removeEventListener("pointerup", handleUp);
+      window.removeEventListener("blur", handleLeave);
+    };
+  }, [mouseX, mouseY, shouldReduceMotion]);
+
+  if (!enabled || shouldReduceMotion || typeof document === "undefined") return null;
+
+  const effectiveMode = hoverMode;
+  const active = effectiveMode !== "default";
+  const visible = pointerInside;
+  const ringSize =
+    effectiveMode === "explore" ? 76 : effectiveMode === "view" ? 70 : active ? 54 : 40;
+  const ringOffset = ringSize / 2;
+  const ringLabel = effectiveMode === "explore" ? "Explore" : "";
+  const cursorColor = active ? "var(--oxblood)" : "var(--ink)";
+  const cursorSurface = active
+    ? "color-mix(in srgb, var(--surface) 78%, var(--oxblood) 22%)"
+    : "color-mix(in srgb, var(--surface) 82%, var(--ink) 18%)";
+
+  const cursorMarkup = (
+    <>
+      <MotionDiv
+        aria-hidden="true"
+        className="pointer-events-none fixed left-[-4px] top-[-4px] z-[9999] hidden h-2 w-2 rounded-full border border-[var(--surface)] shadow-[0_0_0_1px_rgba(33,26,22,0.34),0_2px_10px_rgba(33,26,22,0.24)] md:block"
+        style={{ x: mouseX, y: mouseY }}
+        animate={{
+          opacity: visible ? 1 : 0,
+          backgroundColor: cursorColor,
+        }}
+        transition={{ duration: 0.12 }}
+      />
+      <MotionDiv
+        aria-hidden="true"
+        className="pointer-events-none fixed left-0 top-0 z-[9997] hidden rounded-full md:block"
+        style={{
+          x: ringX,
+          y: ringY,
+          marginLeft: -(ringOffset + 5),
+          marginTop: -(ringOffset + 5),
+        }}
+        animate={{
+          width: ringSize + 10,
+          height: ringSize + 10,
+          opacity: visible ? 1 : 0,
+          scale: isPressed ? 0.9 : 1,
+          backgroundColor: active
+            ? "color-mix(in srgb, var(--oxblood) 20%, transparent)"
+            : "color-mix(in srgb, var(--surface) 34%, transparent)",
+        }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      />
+      <MotionDiv
+        aria-hidden="true"
+        className="pointer-events-none fixed left-0 top-0 z-[9998] hidden items-center justify-center rounded-full border text-[9px] font-semibold uppercase tracking-[0.17em] shadow-[0_0_0_1px_rgba(248,245,239,0.82),0_10px_28px_rgba(33,26,22,0.24)] backdrop-blur-[5px] md:flex"
+        style={{
+          x: ringX,
+          y: ringY,
+          marginLeft: -ringOffset,
+          marginTop: -ringOffset,
+        }}
+        animate={{
+          width: ringSize,
+          height: ringSize,
+          opacity: visible ? 1 : 0,
+          scale: isPressed ? 0.87 : 1,
+          borderColor: cursorColor,
+          backgroundColor: cursorSurface,
+          color: cursorColor,
+        }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {effectiveMode === "view" ? <VeloceArrow className="w-7" /> : ringLabel}
+      </MotionDiv>
+    </>
+  );
+
+  return createPortal(cursorMarkup, document.body);
+}
+
+function VehicleCard({ product }) {
+  const imageSrc = product.images?.[0] ?? product.imageUrl;
+  const { brand, model } = splitVehicleName(product);
+  const isInStock =
+    typeof product.inStock === "boolean"
+      ? product.inStock
+      : Number(product.stock ?? 0) > 0;
+  const hasOriginalPrice =
+    Number(product.originalPrice) > Number(product.price);
+
+  return (
+    <MotionDiv variants={softReveal}>
+      <Link
+        to={`/products/${product.id}`}
+        className="group block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--oxblood)]"
+        data-cursor="view"
+      >
+        <div className="relative aspect-[4/5] overflow-hidden bg-[var(--stone)]">
+          {imageSrc ? (
+            <img
+              src={imageSrc}
+              alt={product.name}
+              className="h-full w-full object-cover transition-transform duration-[560ms] ease-[var(--ease-premium)] group-hover:scale-[1.035] group-active:scale-[1.015]"
+              onError={(event) => {
+                event.currentTarget.style.display = "none";
+              }}
+            />
+          ) : null}
+          <div className="absolute inset-0 bg-gradient-to-t from-[color-mix(in_srgb,var(--dark-surface)_36%,transparent)] via-transparent to-transparent opacity-60 transition-opacity duration-500 group-hover:opacity-46" />
+          {!isInStock && (
+            <div className="absolute bottom-4 left-4 text-[11px] uppercase tracking-[0.18em] text-[color-mix(in_srgb,var(--surface)_82%,transparent)]">
+              Unavailable
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 grid min-h-[7.5rem] content-start gap-2">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--ink-muted)]">
+            {brand}
+          </p>
+          <div className="flex items-start justify-between gap-4">
+            <h3 className="min-w-0 text-lg font-medium leading-snug text-[var(--ink)] transition-transform duration-[360ms] ease-[var(--ease-premium)] group-hover:-translate-y-0.5">
+              {model}
+            </h3>
+            <VeloceArrow className="mt-1 flex-shrink-0 text-[var(--oxblood)] opacity-0 group-hover:opacity-100" />
+          </div>
+          <div className="flex flex-wrap items-baseline gap-2">
+            <span className="text-sm font-medium tabular-nums text-[var(--ink)]">
+              {formatPrice(product.price)}
+            </span>
+            {hasOriginalPrice && (
+              <span className="text-xs text-[var(--ink-muted)] line-through">
+                {formatPrice(product.originalPrice)}
+              </span>
+            )}
+          </div>
+        </div>
+      </Link>
+    </MotionDiv>
+  );
+}
+
+function VehicleSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="aspect-[4/5] bg-[var(--stone)]" />
+      <div className="mt-4 h-2.5 w-20 rounded bg-[var(--brass-line-strong)]" />
+      <div className="mt-3 h-4 w-2/3 rounded bg-[var(--brass-line-strong)]" />
+      <div className="mt-3 h-3 w-28 rounded bg-[var(--stone)]" />
+    </div>
+  );
+}
 
 export default function HomePage() {
   const heroRef = useRef(null);
@@ -53,252 +280,242 @@ export default function HomePage() {
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  const heroImageY = useTransform(scrollYProgress, [0, 1], [0, 90]);
-  const heroTextY = useTransform(scrollYProgress, [0, 1], [0, -28]);
-  const categoryImages = {
-    supercars: "/images/category-supercars.jpg",
-    sportscars: "/images/category-sportscars.jpg",
-    luxury: "/images/category-luxury.jpg",
-  };
+  const heroImageY = useTransform(scrollYProgress, [0, 1], [0, 36]);
+  const heroImageScale = useTransform(scrollYProgress, [0, 1], [1, 1.025]);
+  const heroTextY = useTransform(scrollYProgress, [0, 0.72], [0, -34]);
+  const heroTextOpacity = useTransform(scrollYProgress, [0, 0.68], [1, 0.78]);
 
-  const { data } = useQuery({
-    queryKey: ["cars", "featured"],
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useQuery({
+    queryKey: ["cars", "homepage-featured"],
     queryFn: () =>
       carService.getAll({ size: 4, sort: "newest" }).then((r) => r.data),
+    staleTime: 30000,
   });
+
   const featuredProducts = (data?.content ?? []).map((car) => {
     const imageUrl = getCarImageByName(car.name, car.imageUrl);
     return {
       ...car,
       imageUrl,
-      images: [imageUrl],
+      images: imageUrl ? [imageUrl] : [],
       sizes: car.variants?.split(",") ?? [],
       inStock: getDisplayInStock(car.name, car.inStock, car.stock),
     };
   });
-  const heroStats = [
-    { label: "Verified cars", value: "32+" },
-    { label: "Avg. handoff", value: "72h" },
-    { label: "Markets served", value: "14" },
-  ];
 
   return (
-    <div>
-      {/* ───── HERO ───── */}
+    <div className="overflow-hidden bg-[var(--canvas)]">
+      <ContextCursor />
       <MotionSection
         ref={heroRef}
-        className="relative min-h-[680px] flex items-center overflow-hidden bg-[#f8f3ea]"
+        className="relative min-h-[calc(100svh-3.5rem)] overflow-hidden"
         initial="hidden"
         animate="visible"
         variants={staggerContainer}
       >
         <MotionImg
           src="/images/f40.jpg"
-          alt="Hero"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-          style={{ y: shouldReduceMotion ? 0 : heroImageY }}
-          initial={{ scale: 1.08, opacity: 0.86 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1.35, ease: [0.22, 1, 0.36, 1] }}
+          alt="Ferrari F40 photographed in a warm studio setting"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          style={{
+            y: shouldReduceMotion ? 0 : heroImageY,
+            scale: shouldReduceMotion ? 1 : heroImageScale,
+          }}
+          initial={{ opacity: 0.96 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
         />
-        {/* dark overlay so text is readable */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#fffaf2]/92 via-[#fffaf2]/66 to-[#17110d]/10" />
-        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#f8f3ea] to-transparent" />
+        <div className="absolute inset-y-0 left-0 w-[56%] bg-[linear-gradient(90deg,rgba(243,239,231,0.92)_0%,rgba(243,239,231,0.7)_34%,rgba(243,239,231,0.08)_78%,rgba(243,239,231,0)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--canvas)] to-transparent" />
 
         <MotionDiv
-          className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
-          style={{ y: shouldReduceMotion ? 0 : heroTextY }}
+          className="relative z-10 mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-[var(--page-max-width)] items-center px-[var(--page-gutter)] py-16"
+          style={{
+            y: shouldReduceMotion ? 0 : heroTextY,
+            opacity: shouldReduceMotion ? 1 : heroTextOpacity,
+          }}
           variants={staggerContainer}
         >
-          <div className="max-w-3xl">
-            <MotionP className="luxury-chip mb-6" variants={fadeUp}>
-              Grand Touring Collection
-            </MotionP>
+          <div className="max-w-[38rem]">
             <MotionP
-              className="text-[#7a6b5f] text-[11px] tracking-[0.28em] uppercase mb-3"
+              className="mb-5 text-[11px] uppercase tracking-[0.28em] text-[var(--ink-muted)]"
               variants={fadeUp}
             >
-              Private Inventory
+              Private automotive gallery
             </MotionP>
             <MotionH1
+              className="max-w-[10ch] text-[clamp(3.6rem,6.35vw,5.35rem)] font-light leading-[0.92] text-[var(--ink)]"
               style={{ fontFamily: "var(--font-display)" }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-light text-[#17110d] leading-[1.02] mb-6"
               variants={fadeUp}
             >
-              Curated machines for
-              <br />
-              <span className="font-normal text-4xl sm:text-5xl lg:text-6xl uppercase">
-                extraordinary drives
-              </span>
+              Machines worth remembering.
             </MotionH1>
             <MotionP
-              className="max-w-2xl text-[#5f5148] text-base sm:text-lg mb-8 leading-8"
+              className="mt-7 max-w-md text-base leading-7 text-[var(--ink-muted)] sm:text-lg"
               variants={fadeUp}
             >
-              Browse verified supercars, sportscars, and luxury vehicles with a
-              complete commerce journey from first inspection to order history.
+              A focused selection of performance and luxury cars.
             </MotionP>
-            <MotionDiv className="flex flex-wrap gap-4" variants={fadeUp}>
+            <MotionDiv className="mt-9" variants={fadeUp}>
               <Link
                 to="/products"
-                className="luxury-btn inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-[8px]"
+                data-cursor="explore"
+                className="group inline-flex items-center gap-4 rounded-[8px] border border-[color-mix(in_srgb,var(--ink)_35%,transparent)] bg-[color-mix(in_srgb,var(--surface)_72%,transparent)] px-6 py-3 text-sm font-semibold text-[var(--ink)] backdrop-blur-sm transition-all duration-[340ms] ease-[var(--ease-premium)] hover:border-[var(--oxblood)] hover:bg-[var(--oxblood)] hover:text-[var(--surface)] active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--oxblood)]"
               >
-                Explore Inventory <ArrowRight size={16} />
-              </Link>
-              <Link
-                to="/products?category=supercars"
-                className="inline-flex items-center gap-2 rounded-[8px] border border-[#d7c5aa] bg-white/45 px-6 py-3 text-sm font-semibold text-[#17110d] transition-colors hover:border-[#b59663] hover:bg-[#fffaf2]"
-              >
-                View Supercars <Gauge size={16} />
+                Explore Inventory
+                <VeloceArrow />
               </Link>
             </MotionDiv>
           </div>
-
-          <MotionDiv
-            className="mt-14 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[10px] border border-[#d7c5aa] bg-white/58 backdrop-blur shadow-[0_18px_50px_rgba(49,38,24,0.12)]"
-            variants={softReveal}
-          >
-            {heroStats.map((stat, index) => (
-              <div
-                key={stat.label}
-                className={`p-4 sm:p-5 ${index > 0 ? "border-l border-[#d7c5aa]" : ""}`}
-              >
-                <p className="text-xl sm:text-2xl font-semibold text-[#17110d]">
-                  {stat.value}
-                </p>
-                <p className="mt-1 text-[10px] sm:text-[11px] uppercase text-[#7a6b5f]">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </MotionDiv>
         </MotionDiv>
       </MotionSection>
 
       <MotionSection
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 section-reveal"
+        className="mx-auto max-w-[var(--page-max-width)] px-[var(--page-gutter)] py-[var(--section-space-large)]"
         variants={fadeUp}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, margin: "-120px" }}
       >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-8">
+        <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[11px] uppercase text-[#7a6b5f] mb-2">
-              Choose your lane
+            <p className="mb-3 text-[11px] uppercase tracking-[0.24em] text-[var(--ink-muted)]">
+              Current selection
             </p>
-            <h2 className="text-3xl font-light text-[#17110d]">
-              Shop by Category
+            <h2 className="text-[clamp(2rem,3.4vw,3rem)] font-light text-[var(--ink)]">
+              Featured Vehicles
             </h2>
           </div>
           <Link
             to="/products"
-            className="text-sm text-[#7f1d2d] hover:text-[#17110d] flex items-center gap-1 transition-colors"
+            className="group inline-flex items-center gap-2 text-sm font-semibold text-[var(--oxblood)] transition-colors hover:text-[var(--ink)]"
+            data-cursor="link"
           >
-            View all <ArrowRight size={14} />
+            View all
+            <VeloceArrow className="w-7" />
           </Link>
         </div>
 
+        {isLoading && (
+          <div className="grid grid-cols-1 gap-x-[var(--content-gap)] gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+            {[...Array(4)].map((_, index) => (
+              <VehicleSkeleton key={index} />
+            ))}
+          </div>
+        )}
+
+        {isError && (
+          <div className="border-y border-[var(--brass-line)] py-14">
+            <p className="text-sm font-semibold text-[var(--ink)]">
+              Inventory is unavailable.
+            </p>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--ink-muted)]">
+              Vehicle data could not be loaded. Check the service connection
+              and try again.
+            </p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="mt-6 rounded-[8px] border border-[var(--ink)] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--surface)] disabled:cursor-not-allowed disabled:border-[var(--brass-line)] disabled:text-[var(--ink-muted)]"
+            >
+              {isFetching ? "Retrying..." : "Retry"}
+            </button>
+          </div>
+        )}
+
+        {!isLoading && !isError && featuredProducts.length === 0 && (
+          <div className="border-y border-[var(--brass-line)] py-14">
+            <p className="text-sm font-semibold text-[var(--ink)]">
+              No vehicles are available yet.
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[var(--ink-muted)]">
+              Add vehicles through the inventory system to populate this
+              section.
+            </p>
+          </div>
+        )}
+
+        {!isLoading && !isError && featuredProducts.length > 0 && (
+          <MotionDiv
+            className="grid grid-cols-1 gap-x-[var(--content-gap)] gap-y-10 sm:grid-cols-2 lg:grid-cols-4"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+          >
+            {featuredProducts.map((product) => (
+              <VehicleCard
+                key={product.id}
+                product={product}
+              />
+            ))}
+          </MotionDiv>
+        )}
+      </MotionSection>
+
+      <MotionSection
+        className="mx-auto max-w-[var(--page-max-width)] px-[var(--page-gutter)] pb-[var(--section-space-medium)] pt-4"
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-120px" }}
+      >
+        <div className="mb-9">
+          <h2 className="text-[clamp(2rem,3.2vw,2.85rem)] font-light text-[var(--ink)]">
+            Browse the collection
+          </h2>
+        </div>
+
         <MotionDiv
-          className="grid grid-cols-1 sm:grid-cols-3 gap-5"
+          className="grid gap-[var(--content-gap)] md:grid-cols-3"
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-80px" }}
         >
           {mockCategories.map((cat) => (
-            <MotionDiv key={cat.id} variants={softReveal}>
-              <Link
+            <MotionDiv
               key={cat.id}
-              to={`/products?category=${cat.slug}`}
-              className="group bespoke-frame relative overflow-hidden rounded-[2px] aspect-[3/4] bg-[#fffaf2] hover-lift"
+              variants={softReveal}
             >
-              <img
-                src={categoryImages[cat.slug] ?? cat.image}
-                alt={cat.name}
-                className="w-full h-full object-cover grayscale-[18%] contrast-110 transition-all duration-500 group-hover:scale-105 group-hover:grayscale-0"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#17110d]/82 via-[#17110d]/12 to-transparent" />
-              <div className="absolute bottom-5 left-5 right-5">
-                <p className="text-white text-lg font-medium tracking-wide">
-                  {cat.name}
-                </p>
-                <p className="mt-1 text-white/72 text-[11px] tracking-[0.14em] uppercase">
-                  {cat.count} curated listings
-                </p>
-              </div>
+              <Link
+                to={`/products?category=${cat.slug}`}
+                className="group block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--oxblood)]"
+                data-cursor="explore"
+              >
+                <div className="relative aspect-[4/5] overflow-hidden bg-[var(--stone)] active:[&>img]:scale-[1.012]">
+                  <img
+                    src={categoryImages[cat.slug] ?? cat.image}
+                    alt={`${cat.name} category`}
+                    className="h-full w-full object-cover transition-transform duration-[620ms] ease-[var(--ease-premium)] group-hover:scale-[1.035]"
+                    style={{
+                      objectPosition:
+                        cat.slug === "supercars"
+                          ? "48% 50%"
+                          : cat.slug === "sportscars"
+                            ? "54% 48%"
+                            : "50% 50%",
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[color-mix(in_srgb,var(--ink)_65%,transparent)] via-[color-mix(in_srgb,var(--ink)_10%,transparent)] to-transparent transition-opacity duration-[620ms] ease-[var(--ease-premium)] group-hover:opacity-90" />
+                  <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between gap-4 transition-transform duration-[560ms] ease-[var(--ease-premium)] group-hover:-translate-y-0.5">
+                    <p className="text-[clamp(1.1rem,1.5vw,1.35rem)] font-medium text-[var(--surface)]">
+                      {cat.name}
+                    </p>
+                    <VeloceArrow className="mb-1 text-[var(--surface)] opacity-75" />
+                  </div>
+                </div>
               </Link>
             </MotionDiv>
           ))}
         </MotionDiv>
-      </MotionSection>
-
-      <MotionSection
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 section-reveal"
-        variants={fadeUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-      >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-8">
-          <div>
-            <p className="text-[11px] uppercase text-[#7a6b5f] mb-2">
-              Live API inventory
-            </p>
-            <h2 className="text-3xl font-light text-[#17110d]">
-              Featured Vehicles
-            </h2>
-          </div>
-          <Link
-            to="/products"
-            className="text-sm text-[#7f1d2d] hover:text-[#17110d] flex items-center gap-1 transition-colors"
-          >
-            View all <ArrowRight size={14} />
-          </Link>
-        </div>
-
-        <MotionDiv
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6"
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-        >
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </MotionDiv>
-      </MotionSection>
-
-      {/* ───── TRUST STRIP ───── */}
-      <MotionSection
-        className="border-t border-[#d7c5aa] bg-[#fffaf2]/70 section-reveal"
-        variants={fadeUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-80px" }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {trustItems.map(({ icon, title, desc }) => (
-              <div
-                key={title}
-                className="bespoke-frame flex items-start gap-3 rounded-[2px] bg-white/60 p-5 hover-lift"
-              >
-                <div className="p-2 bg-[#f1e4d0] border border-[#d7c5aa] rounded-lg shadow-sm flex-shrink-0">
-                  {createElement(icon, {
-                    size: 18,
-                    className: "text-[#7f1d2d]",
-                  })}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[#17110d]">{title}</p>
-                  <p className="text-xs text-[#7a6b5f] mt-0.5">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </MotionSection>
     </div>
   );
