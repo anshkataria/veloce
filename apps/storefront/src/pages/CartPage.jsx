@@ -9,19 +9,19 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-        <ShoppingBag size={48} className="mx-auto text-gray-200 mb-4" />
-        <h2 className="text-xl font-light text-gray-900 mb-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center fade-in-up">
+        <ShoppingBag size={48} className="mx-auto text-[#d7c5aa] mb-4" />
+        <h2 className="text-xl font-light text-[#17110d] mb-2">
           Your cart is empty
         </h2>
-        <p className="text-sm text-gray-400 mb-8">
-          Looks like you haven't added anything yet.
+        <p className="text-sm text-[#7a6b5f] mb-8">
+          Reserve a vehicle from the current inventory to begin checkout.
         </p>
         <Link
           to="/products"
-          className="inline-flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-medium hover:bg-gray-700 transition-colors"
+          className="inline-flex items-center gap-2 luxury-btn px-6 py-3 rounded-[8px] text-sm font-semibold"
         >
-          Start Shopping
+          View Inventory
         </Link>
       </div>
     );
@@ -32,8 +32,11 @@ export default function CartPage() {
   const grandTotal = total + shipping;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <h1 className="text-2xl font-light text-gray-900 mb-8">Shopping Cart</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 fade-in-up">
+      <div className="mb-8">
+        <p className="luxury-chip mb-3">Your Selection</p>
+        <h1 className="text-3xl font-light text-[#17110d]">Shopping Cart</h1>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* ── CART ITEMS ── */}
@@ -41,14 +44,14 @@ export default function CartPage() {
           {items.map(({ product, size, quantity }) => (
             <div
               key={`${product.id}-${size}`}
-              className="flex gap-4 p-4 bg-gray-50 rounded-2xl"
+              className="bespoke-frame flex gap-4 p-4 luxury-panel rounded-[2px] hover-lift"
             >
               {/* Image */}
               <Link to={`/products/${product.id}`} className="flex-shrink-0">
                 <img
                   src={product.images[0]}
                   alt={product.name}
-                  className="w-24 h-32 object-cover rounded-xl"
+                  className="w-24 h-32 object-cover rounded-[10px] border border-[#d7c5aa]"
                 />
               </Link>
 
@@ -57,32 +60,32 @@ export default function CartPage() {
                 <div>
                   <Link
                     to={`/products/${product.id}`}
-                    className="text-sm font-medium text-gray-900 hover:text-gray-600 transition-colors"
+                    className="text-sm font-semibold text-[#17110d] hover:text-[#7f1d2d] transition-colors"
                   >
                     {product.name}
                   </Link>
-                  <p className="text-xs text-gray-400 mt-1">Size: {size}</p>
+                  <p className="text-xs text-[#7a6b5f] mt-1">Variant: {size}</p>
                 </div>
 
                 <div className="flex items-center justify-between">
                   {/* Quantity controls */}
-                  <div className="flex items-center gap-2 border border-gray-200 rounded-full px-2 py-1 bg-white">
+                  <div className="flex items-center gap-2 border border-[#d7c5aa] rounded-full px-2 py-1 bg-white/70">
                     <button
                       onClick={() =>
                         updateQuantity(product.id, size, quantity - 1)
                       }
-                      className="p-1 text-gray-500 hover:text-gray-900 transition-colors"
+                      className="p-1 text-[#7a6b5f] hover:text-[#17110d] transition-colors"
                     >
                       <Minus size={12} />
                     </button>
-                    <span className="text-sm font-medium w-4 text-center">
+                    <span className="text-sm font-semibold w-4 text-center text-[#17110d]">
                       {quantity}
                     </span>
                     <button
                       onClick={() =>
                         updateQuantity(product.id, size, quantity + 1)
                       }
-                      className="p-1 text-gray-500 hover:text-gray-900 transition-colors"
+                      className="p-1 text-[#7a6b5f] hover:text-[#17110d] transition-colors"
                     >
                       <Plus size={12} />
                     </button>
@@ -90,12 +93,12 @@ export default function CartPage() {
 
                   {/* Price + delete */}
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-gray-900">
+                    <span className="text-sm font-semibold text-[#17110d]">
                       {formatPrice(product.price * quantity)}
                     </span>
                     <button
                       onClick={() => removeItem(product.id, size)}
-                      className="text-gray-300 hover:text-rose-500 transition-colors"
+                      className="text-[#b8aa98] hover:text-[#7f1d2d] transition-colors"
                     >
                       <Trash2 size={15} />
                     </button>
@@ -108,17 +111,17 @@ export default function CartPage() {
 
         {/* ── ORDER SUMMARY ── */}
         <div className="lg:col-span-1">
-          <div className="bg-gray-50 rounded-2xl p-6 sticky top-24 space-y-4">
-            <h2 className="text-base font-medium text-gray-900">
+          <div className="bespoke-frame luxury-panel rounded-[2px] p-6 sticky top-24 space-y-4">
+            <h2 className="text-base font-semibold text-[#17110d]">
               Order Summary
             </h2>
 
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-[#5f5148]">
                 <span>Subtotal</span>
                 <span>{formatPrice(total)}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-[#5f5148]">
                 <span>Shipping</span>
                 <span>
                   {shipping === 0 ? (
@@ -129,28 +132,27 @@ export default function CartPage() {
                 </span>
               </div>
               {shipping > 0 && (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-[#7a6b5f]">
                   Add {formatPrice(999 - total)} more for free shipping
                 </p>
               )}
             </div>
 
-            <div className="border-t border-gray-200 pt-4 flex justify-between font-semibold text-gray-900">
+            <div className="border-t border-[#d7c5aa] pt-4 flex justify-between font-semibold text-[#17110d]">
               <span>Total</span>
               <span>{formatPrice(grandTotal)}</span>
             </div>
 
             <button
               onClick={() => navigate("/checkout")}
-              className="w-full bg-gray-900 text-white py-3.5 rounded-full text-sm font-medium
-                         hover:bg-gray-700 transition-colors"
+              className="w-full luxury-btn py-3.5 rounded-[8px] text-sm font-semibold"
             >
               Proceed to Checkout
             </button>
 
             <Link
               to="/products"
-              className="block text-center text-sm text-gray-400 hover:text-gray-900 transition-colors"
+              className="block text-center text-sm text-[#7a6b5f] hover:text-[#17110d] transition-colors"
             >
               Continue Shopping
             </Link>
