@@ -1,8 +1,13 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { ArrowUpRight, Gauge, ShoppingBag } from "lucide-react";
 import useCartStore from "../store/cartStore";
 import { formatPrice } from "../utils/formatPrice";
 import { formatCategoryLabel } from "../utils/catalogUtils";
+import { softReveal } from "../utils/motionVariants";
+
+const MotionDiv = motion.div;
+const MotionImg = motion.img;
 
 export default function ProductCard({ product }) {
   const addItem = useCartStore((s) => s.addItem);
@@ -38,15 +43,27 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <Link
-      to={`/products/${product.id}`}
-      className="group block fade-in-up rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b59663]"
+    <MotionDiv
+      variants={softReveal}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-80px" }}
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.25 }}
     >
+      <Link
+        to={`/products/${product.id}`}
+        className="group block rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b59663]"
+      >
       <div className="bespoke-frame relative overflow-hidden rounded-[2px] bg-[#fffaf2] aspect-[4/5] shadow-[0_18px_45px_rgba(49,38,24,0.13)] hover-lift">
-        <img
+        <MotionImg
           src={imageSrc}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+          initial={{ scale: 1.08 }}
+          whileInView={{ scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#17110d]/65 via-[#17110d]/6 to-transparent opacity-70 group-hover:opacity-88 transition-opacity" />
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/30 to-transparent" />
@@ -122,6 +139,7 @@ export default function ProductCard({ product }) {
           )}
         </div>
       </div>
-    </Link>
+      </Link>
+    </MotionDiv>
   );
 }
