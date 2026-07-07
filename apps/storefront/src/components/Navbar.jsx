@@ -26,7 +26,7 @@ export default function Navbar() {
           <Link
             to="/"
             style={{ fontFamily: "var(--font-display)" }}
-            className="text-2xl font-light tracking-[0.34em] uppercase text-[#f2f4f3]"
+            className="text-2xl font-semibold tracking-[0.34em] uppercase text-[#17110d]"
           >
             VELOCE
           </Link>
@@ -40,8 +40,8 @@ export default function Navbar() {
                 className={({ isActive }) =>
                   `text-sm tracking-wide transition-colors pb-1 border-b ${
                     isActive
-                      ? "text-[#f2f4f3] font-medium border-[#f2f4f3]"
-                      : "text-[#d8d0c7] hover:text-[#f2f4f3] border-transparent"
+                      ? "text-[#17110d] font-semibold border-[#b59663]"
+                      : "text-[#7a6b5f] hover:text-[#17110d] border-transparent"
                   }`
                 }
               >
@@ -54,26 +54,26 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/products")}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-[#d8d0c7] hover:text-[#f2f4f3] hover:bg-[#49111c]/40 transition-colors"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-[#7a6b5f] hover:text-[#17110d] hover:bg-[#eadcc8] transition-colors"
             >
               <Search size={20} />
             </button>
 
             {user ? (
               <div className="relative group">
-                <button className="w-9 h-9 rounded-full flex items-center justify-center text-[#d8d0c7] hover:text-[#f2f4f3] hover:bg-[#49111c]/40 transition-colors">
+                <button className="w-9 h-9 rounded-full flex items-center justify-center text-[#7a6b5f] hover:text-[#17110d] hover:bg-[#eadcc8] transition-colors">
                   <User size={20} />
                 </button>
                 <div
-                  className="absolute right-0 top-10 w-44 bg-[#0a0908] border border-[#5e503f] rounded-xl shadow-lg
+                  className="absolute right-0 top-10 w-44 bg-[#fffaf2] border border-[#d7c5aa] rounded-xl shadow-lg
                     opacity-0 group-hover:opacity-100 transition-opacity py-2 z-50"
                 >
-                  <p className="px-4 py-1 text-xs text-[#a9927d] truncate">
+                  <p className="px-4 py-1 text-xs text-[#7a6b5f] truncate">
                     {user.name}
                   </p>
                   <Link
                     to="/orders"
-                    className="block px-4 py-2 text-sm text-[#f2f4f3] hover:bg-[#49111c]/45"
+                    className="block px-4 py-2 text-sm text-[#17110d] hover:bg-[#f1e4d0]"
                   >
                     My Orders
                   </Link>
@@ -82,7 +82,7 @@ export default function Navbar() {
                       logout();
                       navigate("/");
                     }}
-                    className="block w-full text-left px-4 py-2 text-sm text-[#f2f4f3] hover:bg-[#49111c]/45"
+                    className="block w-full text-left px-4 py-2 text-sm text-[#17110d] hover:bg-[#f1e4d0]"
                   >
                     Logout
                   </button>
@@ -91,7 +91,7 @@ export default function Navbar() {
             ) : (
               <Link
                 to="/login"
-                className="w-9 h-9 rounded-full flex items-center justify-center text-[#d8d0c7] hover:text-[#f2f4f3] hover:bg-[#49111c]/40 transition-colors"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-[#7a6b5f] hover:text-[#17110d] hover:bg-[#eadcc8] transition-colors"
               >
                 <User size={20} />
               </Link>
@@ -99,11 +99,11 @@ export default function Navbar() {
 
             <Link
               to="/cart"
-              className="relative w-9 h-9 rounded-full flex items-center justify-center text-[#d8d0c7] hover:text-[#f2f4f3] hover:bg-[#49111c]/40 transition-colors"
+              className="relative w-9 h-9 rounded-full flex items-center justify-center text-[#7a6b5f] hover:text-[#17110d] hover:bg-[#eadcc8] transition-colors"
             >
               <ShoppingBag size={20} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#a9927d] text-[#0a0908] text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-[#7f1d2d] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
                   {totalItems}
                 </span>
               )}
@@ -111,7 +111,7 @@ export default function Navbar() {
 
             {/* Mobile menu toggle */}
             <button
-              className="md:hidden w-9 h-9 rounded-full flex items-center justify-center text-[#d8d0c7] hover:text-[#f2f4f3] hover:bg-[#49111c]/40"
+              className="md:hidden w-9 h-9 rounded-full flex items-center justify-center text-[#7a6b5f] hover:text-[#17110d] hover:bg-[#eadcc8]"
               onClick={() => setMenuOpen((o) => !o)}
             >
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -122,14 +122,14 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-[#5e503f] bg-[#0a0908]/95 backdrop-blur px-4 py-4 flex flex-col gap-4">
+        <div className="md:hidden border-t border-[#d7c5aa] bg-[#fffaf2]/95 backdrop-blur px-4 py-4 flex flex-col gap-4">
           {navLinks.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
               onClick={() => setMenuOpen(false)}
               className={({ isActive }) =>
-                `text-sm tracking-wide px-2 py-2 rounded-lg ${isActive ? "text-[#f2f4f3] font-medium bg-[#49111c]/45" : "text-[#d8d0c7] hover:text-[#f2f4f3]"}`
+                `text-sm tracking-wide px-2 py-2 rounded-lg ${isActive ? "text-[#17110d] font-semibold bg-[#eadcc8]" : "text-[#7a6b5f] hover:text-[#17110d]"}`
               }
             >
               {link.label}
