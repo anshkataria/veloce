@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import VeloceCursor from "../components/VeloceCursor";
 import { useState } from "react";
 
 const MotionMain = motion.main;
@@ -43,6 +44,7 @@ export default function MainLayout() {
         </div>
       )}
       <ScrollToTop />
+      <VeloceCursor />
       <Navbar />
       <AnimatePresence mode="wait" initial={false}>
         <MotionMain

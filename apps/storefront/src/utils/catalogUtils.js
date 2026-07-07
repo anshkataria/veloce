@@ -15,7 +15,7 @@ export function formatCategoryLabel(category = "") {
     return "Sportscars";
   }
   if (key === "luxury" || key === "luxurycars" || key === "luxurycar") {
-    return "Luxury cars";
+    return "Luxury Cars";
   }
 
   return category;

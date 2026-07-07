@@ -1,39 +1,70 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import ProductCard from "../components/ProductCard";
 import { carService } from "../services/carService";
 import { getCarImageByName } from "../utils/carImageMap";
-import { formatCategoryLabel, getDisplayInStock } from "../utils/catalogUtils";
+import { getDisplayInStock } from "../utils/catalogUtils";
 import { fadeUp, staggerContainer } from "../utils/motionVariants";
 
 const MotionDiv = motion.div;
 const MotionSection = motion.section;
 
-const CATEGORIES = ["all", "supercars", "sportscars", "luxury"];
+const CATEGORY_COPY = {
+  all: {
+    eyebrow: "The Collection",
+    heading: "Available Vehicles",
+    supporting: "Explore the current selection.",
+  },
+  supercars: {
+    heading: "Supercars",
+    supporting: "The current selection.",
+  },
+  sportscars: {
+    heading: "Sportscars",
+    supporting: "The current selection.",
+  },
+  luxury: {
+    heading: "Luxury Cars",
+    supporting: "The current selection.",
+  },
+};
+
 const SORT_OPTIONS = [
   { label: "Newest", value: "newest" },
-  { label: "Price Low", value: "price_asc" },
-  { label: "Price High", value: "price_desc" },
+  { label: "Price: Low to High", value: "price_asc" },
+  { label: "Price: High to Low", value: "price_desc" },
 ];
 
+function SearchGlyph({ className = "" }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      className={`h-4 w-4 ${className}`}
+    >
+      <circle cx="10.2" cy="10.2" r="5.3" stroke="currentColor" strokeWidth="1.45" />
+      <path
+        d="M14.4 14.4L18.7 18.7"
+        stroke="currentColor"
+        strokeWidth="1.45"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export default function ProductsPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [searchParams] = useSearchParams();
   const [sort, setSort] = useState("newest");
   const [search, setSearch] = useState("");
 
   const activeCategory = searchParams.get("category") || "all";
+  const pageCopy = CATEGORY_COPY[activeCategory] ?? CATEGORY_COPY.all;
 
-  const setCategory = (cat) => {
-    if (cat === "all") searchParams.delete("category");
-    else searchParams.set("category", cat);
-    setSearchParams(searchParams);
-  };
-
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ["cars", activeCategory, search, sort],
     queryFn: () =>
       carService
@@ -41,7 +72,7 @@ export default function ProductsPage() {
           category: activeCategory === "all" ? undefined : activeCategory,
           search: search || undefined,
           sort,
-          size: 20,
+          size: 24,
         })
         .then((r) => r.data),
     staleTime: 30000,
@@ -52,198 +83,148 @@ export default function ProductsPage() {
     imageUrl: getCarImageByName(car.name, car.imageUrl),
     inStock: getDisplayInStock(car.name, car.inStock, car.stock),
   }));
-  const totalVehicles = data?.totalElements ?? cars.length;
-  const availableVehicles = cars.filter((car) => car.inStock).length;
-  const newestVehicles = cars.filter((car) => car.isNew).length;
+
+  const hasSearch = search.trim().length > 0;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-[calc(100svh-3.5rem)] bg-[var(--canvas)]">
       <MotionSection
-        className="border-b border-[#d7c5aa] bg-[#fffaf2]/70"
+        className="mx-auto max-w-[var(--page-max-width)] px-[var(--page-gutter)] pb-8 pt-[clamp(4.5rem,8vw,7rem)]"
         initial="hidden"
         animate="visible"
         variants={fadeUp}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
-          <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
-            <div>
-              <p className="luxury-chip mb-4">Curated Inventory</p>
-              <h1
-                className="text-4xl sm:text-5xl font-light text-[#17110d] leading-tight"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                {activeCategory === "all"
-                  ? "Available Vehicles"
-                  : formatCategoryLabel(activeCategory)}
-              </h1>
-              <p className="mt-4 max-w-2xl text-sm sm:text-base leading-7 text-[#5f5148]">
-                Browse verified performance and luxury inventory with live
-                stock, precise category filters, and an authenticated ordering
-                path.
-              </p>
-            </div>
-            <div className="bespoke-frame grid grid-cols-3 overflow-hidden rounded-[2px] bg-white/65 shadow-[0_18px_50px_rgba(49,38,24,0.1)]">
-              {[
-                { label: "Listed", value: totalVehicles },
-                { label: "Ready", value: availableVehicles },
-                { label: "New", value: newestVehicles },
-              ].map((stat, index) => (
-                <div
-                  key={stat.label}
-                  className={`p-4 ${index > 0 ? "border-l border-[#d7c5aa]" : ""}`}
-                >
-                  <p className="text-xl font-semibold text-[#17110d]">
-                    {stat.value}
-                  </p>
-                  <p className="mt-1 text-[11px] uppercase text-[#7a6b5f]">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        {pageCopy.eyebrow && (
+          <p className="mb-4 text-[11px] uppercase tracking-[0.26em] text-[var(--ink-muted)]">
+            {pageCopy.eyebrow}
+          </p>
+        )}
+        <h1
+          className="text-[clamp(2.75rem,5vw,4.75rem)] font-light leading-[0.98] text-[var(--ink)]"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {pageCopy.heading}
+        </h1>
+        <p className="mt-5 max-w-md text-base leading-7 text-[var(--ink-muted)]">
+          {pageCopy.supporting}
+        </p>
       </MotionSection>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
-        {/* Toolbar */}
+      <section className="mx-auto max-w-[var(--page-max-width)] px-[var(--page-gutter)] pb-[var(--section-space-medium)]">
         <MotionDiv
-          className="bespoke-frame mb-7 rounded-[2px] bg-[#fffaf2]/90 p-3 shadow-[0_16px_36px_rgba(49,38,24,0.1)]"
+          className="mb-9 flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
           variants={fadeUp}
           initial="hidden"
           animate="visible"
-          transition={{ delay: 0.08 }}
+          transition={{ delay: 0.06 }}
         >
-          <div className="flex flex-col gap-3 lg:flex-row">
-            <label className="relative flex-1">
-              <Search
-                size={17}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7a6b5f]"
-              />
-              <input
-                type="text"
-                aria-label="Search model or marque"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-12 w-full rounded-[8px] border border-[#d7c5aa] bg-white/75 pl-11 pr-4 text-sm text-[#17110d]
-                         focus:outline-none focus:ring-1 focus:ring-[#b59663]"
-              />
-            </label>
+          <label className="relative w-full md:max-w-[34rem]">
+            <span className="sr-only">Search inventory</span>
+            <SearchGlyph className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--ink-muted)]" />
+            <input
+              type="search"
+              aria-label="Search inventory"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search by marque or model"
+              data-cursor="search"
+              className="h-11 w-full rounded-[8px] border border-[var(--brass-line-strong)] bg-[color-mix(in_srgb,var(--surface)_78%,transparent)] pl-11 pr-4 text-sm text-[var(--ink)] outline-none transition-colors duration-[260ms] ease-[var(--ease-premium)] placeholder:text-[color-mix(in_srgb,var(--ink-muted)_76%,transparent)] focus:border-[var(--oxblood)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--oxblood)_16%,transparent)]"
+            />
+          </label>
+
+          <label className="relative w-full md:w-56">
+            <span className="sr-only">Sort vehicles</span>
             <select
               value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="h-12 rounded-[8px] border border-[#d7c5aa] bg-white/75 px-4 text-sm text-[#17110d]
-                       focus:outline-none focus:ring-1 focus:ring-[#b59663] lg:w-44"
+              onChange={(event) => setSort(event.target.value)}
+              aria-label="Sort vehicles"
+              data-cursor="link"
+              className="h-11 w-full appearance-none rounded-[8px] border border-[var(--brass-line-strong)] bg-[color-mix(in_srgb,var(--surface)_78%,transparent)] px-4 pr-10 text-sm text-[var(--ink)] outline-none transition-colors duration-[260ms] ease-[var(--ease-premium)] focus:border-[var(--oxblood)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--oxblood)_16%,transparent)]"
             >
-              {SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
-            <button
-              onClick={() => setFiltersOpen((o) => !o)}
-              className="flex h-12 items-center justify-center gap-2 rounded-[8px] border border-[#d7c5aa] px-4 text-sm text-[#17110d] transition-colors hover:border-[#b59663] sm:hidden"
-            >
-              <SlidersHorizontal size={15} /> Filters
-            </button>
-          </div>
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute right-4 top-1/2 h-1.5 w-1.5 -translate-y-2 rotate-45 border-b border-r border-[var(--ink)]"
+            />
+          </label>
         </MotionDiv>
 
-        <div className="grid gap-8 lg:grid-cols-[230px_minmax(0,1fr)]">
-          {/* Sidebar */}
-          <aside
-            className={`${filtersOpen ? "block" : "hidden"} lg:block flex-shrink-0`}
-          >
-            <div className="bespoke-frame sticky top-24 rounded-[2px] bg-[#fffaf2]/90 p-4 shadow-[0_16px_40px_rgba(49,38,24,0.08)]">
-              <div className="mb-4 flex items-center gap-2 text-[#17110d]">
-                <Sparkles size={15} className="text-[#7f1d2d]" />
-                <h3 className="text-xs font-semibold uppercase">Categories</h3>
+        {isLoading && (
+          <div className="grid grid-cols-1 gap-x-[var(--content-gap)] gap-y-12 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            {[...Array(8)].map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="aspect-[4/5] bg-[var(--stone)]" />
+                <div className="mt-4 h-2.5 w-20 rounded bg-[var(--brass-line-strong)]" />
+                <div className="mt-3 h-5 w-2/3 rounded bg-[var(--brass-line-strong)]" />
+                <div className="mt-3 h-3 w-28 rounded bg-[var(--stone)]" />
               </div>
-              <div className="grid gap-2">
-                {CATEGORIES.map((cat) => {
-                  const active = activeCategory === cat;
-                  return (
-                    <button
-                      key={cat}
-                      onClick={() => setCategory(cat)}
-                      className={`flex items-center justify-between rounded-[8px] border px-3 py-2.5 text-left text-sm transition-colors ${
-                        active
-                          ? "border-[#17110d] bg-[#17110d] text-white"
-                          : "border-[#d7c5aa] text-[#5f5148] hover:border-[#b59663] hover:text-[#17110d] hover:bg-white/65"
-                      }`}
-                    >
-                      <span>
-                        {cat === "all" ? "All Cars" : formatCategoryLabel(cat)}
-                      </span>
-                      {active && <X size={13} />}
-                    </button>
-                  );
-                })}
-              </div>
-              {activeCategory !== "all" && (
-                <button
-                  onClick={() => setCategory("all")}
-                  className="mt-4 flex items-center gap-1 text-xs text-[#7f1d2d] hover:text-[#17110d]"
-                >
-                  <X size={12} /> Clear filters
-                </button>
-              )}
-            </div>
-          </aside>
+            ))}
+          </div>
+        )}
 
-          {/* Grid */}
-          <div className="min-w-0">
-            {isLoading && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="bg-[#fffaf2] border border-[#d7c5aa] rounded-[10px] aspect-[4/5] mb-4" />
-                    <div className="h-3 bg-[#eadcc8] rounded w-2/3 mb-3" />
-                    <div className="h-3 bg-[#eadcc8] rounded w-1/2" />
-                  </div>
-                ))}
-              </div>
-            )}
+        {isError && (
+          <div className="border-y border-[var(--brass-line)] py-16">
+            <p className="text-sm font-semibold text-[var(--ink)]">
+              Inventory is unavailable.
+            </p>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--ink-muted)]">
+              Vehicle data could not be loaded. Check the service connection and try again.
+            </p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              data-cursor="link"
+              className="mt-6 rounded-[8px] border border-[var(--ink)] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition-colors hover:border-[var(--oxblood)] hover:bg-[var(--oxblood)] hover:text-[var(--surface)] disabled:border-[var(--brass-line)] disabled:text-[var(--ink-muted)]"
+            >
+              {isFetching ? "Retrying..." : "Retry"}
+            </button>
+          </div>
+        )}
 
-            {isError && (
-              <div className="rounded-[10px] border border-[#d7c5aa] bg-[#fffaf2] py-20 text-center">
-                <p className="text-sm text-[#7a6b5f]">
-                  Failed to load cars. Is the backend running?
-                </p>
-              </div>
-            )}
-
-            {!isLoading && !isError && cars.length === 0 && (
-              <div className="rounded-[10px] border border-[#d7c5aa] bg-[#fffaf2] py-20 text-center">
-                <p className="text-sm text-[#7a6b5f]">No vehicles found.</p>
-                <button
-                  onClick={() => {
-                    setSearch("");
-                    setCategory("all");
-                  }}
-                  className="mt-4 rounded-[8px] bg-[#17110d] px-4 py-2 text-sm font-semibold text-white"
-                >
-                  Clear search
-                </button>
-              </div>
-            )}
-
-            {!isLoading && cars.length > 0 && (
-              <MotionDiv
-                className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6"
-                variants={staggerContainer}
-                initial="hidden"
-                animate="visible"
+        {!isLoading && !isError && cars.length === 0 && (
+          <div className="border-y border-[var(--brass-line)] py-16">
+            <p className="text-sm font-semibold text-[var(--ink)]">
+              {hasSearch
+                ? "No vehicles match this search."
+                : "No vehicles are available yet."}
+            </p>
+            {hasSearch && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                data-cursor="link"
+                className="mt-4 text-sm font-semibold text-[var(--oxblood)] transition-colors hover:text-[var(--ink)]"
               >
-                {cars.map((car) => (
-                  <ProductCard key={car.id} product={car} />
-                ))}
-              </MotionDiv>
+                Clear search
+              </button>
             )}
           </div>
-        </div>
-      </div>
+        )}
+
+        {!isLoading && !isError && cars.length > 0 && (
+          <MotionDiv
+            key={`${activeCategory}-${sort}-${search}`}
+            className="grid grid-cols-1 gap-x-[var(--content-gap)] gap-y-12 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+          >
+            {cars.map((car) => (
+              <ProductCard
+                key={car.id}
+                product={car}
+                showCategory={activeCategory === "all"}
+              />
+            ))}
+          </MotionDiv>
+        )}
+      </section>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import useCartStore from "../store/cartStore";
 import useAuthStore from "../store/authStore";
@@ -130,12 +130,17 @@ export default function Navbar() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
+  const location = useLocation();
+  const activeCategory =
+    location.pathname === "/products"
+      ? new URLSearchParams(location.search).get("category") || "all"
+      : "";
 
   const navLinks = [
-    { to: "/products", label: "All Cars" },
-    { to: "/products?category=supercars", label: "Supercars" },
-    { to: "/products?category=sportscars", label: "Sportscars" },
-    { to: "/products?category=luxury", label: "Luxury Cars" },
+    { to: "/products", label: "All Cars", category: "all" },
+    { to: "/products?category=supercars", label: "Supercars", category: "supercars" },
+    { to: "/products?category=sportscars", label: "Sportscars", category: "sportscars" },
+    { to: "/products?category=luxury", label: "Luxury Cars", category: "luxury" },
   ];
 
   return (
@@ -153,21 +158,25 @@ export default function Navbar() {
 
           {/* Desktop nav links */}
           <nav className="hidden items-center gap-7 md:flex">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive }) =>
-                  `border-b pb-1 text-sm tracking-wide transition-colors duration-200 ${
+            {navLinks.map((link) => {
+              const isActive = activeCategory === link.category;
+
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  aria-current={isActive ? "page" : undefined}
+                  data-cursor="link"
+                  className={`border-b pb-1 text-sm tracking-wide transition-colors duration-200 ${
                     isActive
-                      ? "text-[var(--ink)] font-semibold border-[var(--oxblood)]"
-                      : "text-[var(--ink-muted)] hover:text-[var(--ink)] border-transparent"
-                  }`
-                }
-              >
-                {link.label}
-              </NavLink>
-            ))}
+                      ? "border-[var(--oxblood)] font-semibold text-[var(--oxblood)]"
+                      : "border-transparent text-[var(--ink)] hover:text-[var(--oxblood)]"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Right icons */}
@@ -175,6 +184,7 @@ export default function Navbar() {
             <button
               aria-label="Search inventory"
               onClick={() => navigate("/products")}
+              data-cursor="search"
               className={iconButtonClass}
             >
               <SearchGlyph />
@@ -184,6 +194,7 @@ export default function Navbar() {
               <div className="relative group">
                 <button
                   aria-label="Account menu"
+                  data-cursor="link"
                   className={iconButtonClass}
                 >
                   <AccountGlyph />
@@ -197,6 +208,7 @@ export default function Navbar() {
                   </p>
                   <Link
                     to="/orders"
+                    data-cursor="link"
                     className="block px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--stone)]"
                   >
                     My Orders
@@ -206,6 +218,7 @@ export default function Navbar() {
                       logout();
                       navigate("/");
                     }}
+                    data-cursor="link"
                     className="block w-full text-left px-4 py-2 text-sm text-[var(--ink)] hover:bg-[var(--stone)]"
                   >
                     Logout
@@ -216,6 +229,7 @@ export default function Navbar() {
               <Link
                 to="/login"
                 aria-label="Sign in"
+                data-cursor="link"
                 className={iconButtonClass}
               >
                 <AccountGlyph />
@@ -225,6 +239,7 @@ export default function Navbar() {
             <Link
               to="/cart"
               aria-label={`Cart with ${totalItems} item${totalItems === 1 ? "" : "s"}`}
+              data-cursor="link"
               className={`relative ${iconButtonClass}`}
             >
               <BagGlyph />
@@ -241,6 +256,7 @@ export default function Navbar() {
             {/* Mobile menu toggle */}
             <button
               aria-label="Toggle navigation menu"
+              data-cursor="link"
               className={`${iconButtonClass} md:hidden`}
               onClick={() => setMenuOpen((o) => !o)}
             >
@@ -254,16 +270,20 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden border-t border-[var(--brass-line)] bg-[var(--surface)]/95 backdrop-blur px-4 py-4 flex flex-col gap-4">
           {navLinks.map((link) => (
-            <NavLink
+            <Link
               key={link.to}
               to={link.to}
               onClick={() => setMenuOpen(false)}
-              className={({ isActive }) =>
-                `text-sm tracking-wide px-2 py-2 rounded-lg ${isActive ? "text-[var(--ink)] font-semibold bg-[var(--stone)]" : "text-[var(--ink-muted)] hover:text-[var(--ink)]"}`
-              }
+              aria-current={activeCategory === link.category ? "page" : undefined}
+              data-cursor="link"
+              className={`rounded-lg px-2 py-2 text-sm tracking-wide ${
+                activeCategory === link.category
+                  ? "bg-[var(--stone)] font-semibold text-[var(--oxblood)]"
+                  : "text-[var(--ink)] hover:text-[var(--oxblood)]"
+              }`}
             >
               {link.label}
-            </NavLink>
+            </Link>
           ))}
         </div>
       )}
