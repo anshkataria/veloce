@@ -29,6 +29,7 @@ public class Order {
     private List<OrderItem> items;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Status status = Status.PROCESSING;
 
     private BigDecimal totalAmount;
@@ -45,6 +46,7 @@ public class Order {
     private String paymentId;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     @CreationTimestamp
