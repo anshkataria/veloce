@@ -44,8 +44,10 @@ public class Car {
 
     private Integer stock;
 
+    @Builder.Default
     private Boolean inStock = true;
 
+    @Builder.Default
     private Boolean isNew = false;
 
     // main image URL (Cloudinary or S3)
