@@ -4,7 +4,6 @@ import DashboardPage from "./pages/DashboardPage";
 import ProductsPage from "./pages/ProductsPage";
 import OrdersPage from "./pages/OrdersPage";
 import LoginPage from "./pages/LoginPage";
-import useAuthStore from "./store/authStore";
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("veloce_admin_token");
