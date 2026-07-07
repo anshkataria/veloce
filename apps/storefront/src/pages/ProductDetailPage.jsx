@@ -1,42 +1,91 @@
-import { createElement, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  Activity,
-  ArrowLeft,
-  Check,
-  Cog,
-  Gauge,
-  Route,
-  ShieldCheck,
-  ShoppingBag,
-  Timer,
-  Truck,
-  Wand2,
-  Zap,
-} from "lucide-react";
+import { Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import ProductCard from "../components/ProductCard";
+import VeloceArrow from "../components/VeloceArrow";
 import useCartStore from "../store/cartStore";
 import { carService } from "../services/carService";
 import { formatPrice } from "../utils/formatPrice";
 import { getCarImageByName } from "../utils/carImageMap";
 import { formatCategoryLabel, getDisplayInStock } from "../utils/catalogUtils";
 import { fadeUp, softReveal, staggerContainer } from "../utils/motionVariants";
-import { getVehicleGallery, getVehicleSpecs } from "../utils/vehicleDetails";
+import {
+  getVehicleGallery,
+  getVehicleObjectPosition,
+  getVehicleSpecs,
+} from "../utils/vehicleDetails";
 
 const MotionDiv = motion.div;
 const MotionImg = motion.img;
+const MotionSection = motion.section;
 const MotionSpan = motion.span;
+
+function splitVehicleName(car) {
+  const brand = car.brand || car.name?.split(" ")[0] || "Vehicle";
+  const model = car.name?.startsWith(brand)
+    ? car.name.slice(brand.length).trim()
+    : car.name;
+
+  return { brand, model: model || car.name };
+}
+
+function BackArrow({ className = "" }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 34 12"
+      fill="none"
+      className={`h-3 w-8 transition-transform duration-[320ms] ease-[var(--ease-premium)] group-hover:-translate-x-1 ${className}`}
+    >
+      <path
+        d="M33 6H3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M7.5 1.5L3 6L7.5 10.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CloseGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5">
+      <path d="M7 7L17 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M17 7L7 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function buildStory(car, specs) {
+  const category = formatCategoryLabel(car.category).toLowerCase();
+  const description = car.description?.trim();
+
+  if (description) {
+    return [description];
+  }
+
+  return [
+    `${car.name} is presented as part of the current ${category} selection, pairing ${specs.engine.toLowerCase()} with ${specs.transmission.toLowerCase()}.`,
+  ];
+}
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const addItem = useCartStore((s) => s.addItem);
+  const addItem = useCartStore((state) => state.addItem);
 
-  const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [viewerOpen, setViewerOpen] = useState(false);
   const [added, setAdded] = useState(false);
-  const [error, setError] = useState("");
 
   const {
     data: car,
@@ -44,419 +93,475 @@ export default function ProductDetailPage() {
     isError,
   } = useQuery({
     queryKey: ["car", id],
-    queryFn: () => carService.getById(id).then((r) => r.data),
+    queryFn: () => carService.getById(id).then((response) => response.data),
   });
 
   const { data: related = [] } = useQuery({
     queryKey: ["related", id],
-    queryFn: () => carService.getRelated(id).then((r) => r.data),
+    queryFn: () => carService.getRelated(id).then((response) => response.data),
     enabled: !!car,
   });
 
   const imageUrl = car ? getCarImageByName(car.name, car.imageUrl) : "";
+  const normalizedImages = useMemo(() => {
+    if (!car) return [];
+    const sourceImages = Array.isArray(car.images) ? car.images : [];
+    return sourceImages.map((src) => getCarImageByName(car.name, src));
+  }, [car]);
 
-  const handleAddToCart = () => {
-    if (!activeVariant) {
-      setError("Please select a variant");
-      return;
-    }
-    // adapt car shape to match cart store expectations
-    const product = {
-      id: car.id,
-      name: car.name,
-      price: car.price,
-      originalPrice: car.originalPrice,
-      images: [imageUrl],
-      sizes: car.variants?.split(",") ?? [],
+  const gallery = car
+    ? getVehicleGallery(car.name, imageUrl, normalizedImages)
+    : [];
+  const currentImageIndex = gallery[selectedImageIndex] ? selectedImageIndex : 0;
+  const selectedImage = gallery[currentImageIndex] ?? gallery[0];
+  const specs = car ? getVehicleSpecs(car.name, car.category) : null;
+  const isInStock = car
+    ? getDisplayInStock(car.name, car.inStock, car.stock)
+    : false;
+  const variants =
+    car?.variants
+      ?.split(",")
+      .map((variant) => variant.trim())
+      .filter(Boolean) ?? [];
+
+  useEffect(() => {
+    if (!viewerOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setViewerOpen(false);
+      if (event.key === "ArrowRight") {
+        setSelectedImageIndex((index) => (index + 1) % gallery.length);
+      }
+      if (event.key === "ArrowLeft") {
+        setSelectedImageIndex((index) => (index - 1 + gallery.length) % gallery.length);
+      }
     };
-    addItem(product, activeVariant, 1);
-    setAdded(true);
-    setError("");
-    setTimeout(() => setAdded(false), 2000);
-  };
 
-  if (isLoading)
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [gallery.length, viewerOpen]);
+
+  if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 animate-pulse">
-          <div className="aspect-[3/4] bg-gray-100 rounded-2xl" />
-          <div className="space-y-4">
-            <div className="h-4 bg-gray-100 rounded w-1/4" />
-            <div className="h-8 bg-gray-100 rounded w-3/4" />
-            <div className="h-6 bg-gray-100 rounded w-1/3" />
+      <div className="mx-auto max-w-[var(--page-max-width)] px-[var(--page-gutter)] py-16">
+        <div className="grid animate-pulse gap-10 lg:grid-cols-[minmax(0,1.65fr)_minmax(22rem,0.9fr)]">
+          <div className="aspect-[16/10] bg-[var(--stone)]" />
+          <div className="space-y-5">
+            <div className="h-3 w-28 rounded bg-[var(--brass-line-strong)]" />
+            <div className="h-12 w-3/4 rounded bg-[var(--brass-line-strong)]" />
+            <div className="h-6 w-36 rounded bg-[var(--stone)]" />
           </div>
         </div>
       </div>
     );
+  }
 
-  if (isError || !car)
+  if (isError || !car || !specs) {
     return (
-      <div className="text-center py-32">
-        <p className="text-gray-400">Car not found.</p>
+      <div className="mx-auto max-w-[var(--page-max-width)] px-[var(--page-gutter)] py-32">
+        <p className="text-sm text-[var(--ink-muted)]">Vehicle not found.</p>
         <button
+          type="button"
           onClick={() => navigate("/products")}
-          className="mt-4 text-sm underline text-gray-900"
+          data-cursor="link"
+          className="group mt-5 inline-flex items-center gap-3 text-sm font-semibold text-[var(--ink)] transition-colors hover:text-[var(--oxblood)]"
         >
-          Back to cars
+          <BackArrow />
+          Back to collection
         </button>
       </div>
     );
+  }
 
-  const variants =
-    car.variants
-      ?.split(",")
-      .map((v) => v.trim())
-      .filter(Boolean) ?? [];
-  const discount = car.originalPrice
-    ? Math.round(((car.originalPrice - car.price) / car.originalPrice) * 100)
-    : 0;
-  const isInStock = getDisplayInStock(car.name, car.inStock, car.stock);
-  const activeVariant = variants.includes(selectedVariant)
-    ? selectedVariant
-    : null;
-  const gallery = getVehicleGallery(car.name, imageUrl);
-  const selectedImage = gallery[selectedImageIndex] ?? gallery[0];
-  const specs = getVehicleSpecs(car.name, car.category);
-  const specHighlights = [
-    [Zap, "Power", specs.horsepower],
-    [Timer, "0-100 km/h", specs.acceleration],
-    [Gauge, "Top speed", specs.topSpeed],
+  const { brand, model } = splitVehicleName(car);
+  const categoryLabel = formatCategoryLabel(car.category);
+  const story = buildStory(car, specs);
+  const specificationRows = [
+    ["Engine", specs.engine],
+    ["Power", specs.horsepower],
+    ["Acceleration", specs.acceleration, "0-100 km/h"],
+    ["Top speed", specs.topSpeed],
+    ["Transmission", specs.transmission],
+    ["Drivetrain", specs.drivetrain],
   ];
-  const specGrid = [
-    [Activity, "Engine", specs.engine],
-    [Zap, "Horsepower", specs.horsepower],
-    [Timer, "0-100 km/h", specs.acceleration],
-    [Cog, "Transmission", specs.transmission],
-    [Route, "Drivetrain", specs.drivetrain],
-    [Gauge, "Top speed", specs.topSpeed],
-  ];
+  const relatedVehicles = related
+    .filter((item) => String(item.id) !== String(car.id))
+    .slice(0, 3)
+    .map((item) => ({
+      ...item,
+      imageUrl: getCarImageByName(item.name, item.imageUrl),
+      inStock: getDisplayInStock(item.name, item.inStock, item.stock),
+    }));
+
+  const handleReserve = () => {
+    const reservationVariant = variants[0] ?? "Reservation";
+    addItem(
+      {
+        id: car.id,
+        name: car.name,
+        price: car.price,
+        originalPrice: car.originalPrice,
+        images: imageUrl ? [imageUrl] : [],
+        sizes: variants.length > 0 ? variants : [reservationVariant],
+        inStock: isInStock,
+      },
+      reservationVariant,
+      1,
+    );
+    setAdded(true);
+    window.setTimeout(() => setAdded(false), 1800);
+  };
 
   return (
     <MotionDiv
-      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10"
+      className="bg-[var(--canvas)]"
       variants={staggerContainer}
       initial="hidden"
       animate="visible"
     >
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-sm text-[#7a6b5f] hover:text-[#17110d] transition-colors mb-8"
-      >
-        <ArrowLeft size={16} /> Back
-      </button>
-
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.1fr)_430px] lg:gap-12">
-        <MotionDiv className="space-y-4" variants={softReveal}>
-          <div className="bespoke-frame relative aspect-[16/11] overflow-hidden rounded-[2px] bg-[#fffaf2] shadow-[0_24px_70px_rgba(49,38,24,0.16)] sm:aspect-[16/10]">
-            <AnimatePresence mode="wait">
-              <MotionImg
-                key={selectedImage.label}
-                src={selectedImage.src}
-                alt={`${car.name} ${selectedImage.label}`}
-                className="h-full w-full object-cover"
-                style={{ objectPosition: selectedImage.objectPosition }}
-                initial={{ opacity: 0, scale: 1.06, clipPath: "inset(0 0 12% 0)" }}
-                animate={{ opacity: 1, scale: 1, clipPath: "inset(0 0 0% 0)" }}
-                exit={{ opacity: 0, scale: 1.02 }}
-                transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
-              />
-            </AnimatePresence>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#17110d]/45 via-transparent to-white/10" />
-            <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4 text-white">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.24em] text-white/75">
-                  Gallery View
-                </p>
-                <p className="mt-1 text-xl font-semibold">
-                  {selectedImage.label}
-                </p>
-              </div>
-              <p className="hidden max-w-[15rem] text-right text-xs text-white/78 sm:block">
-                {selectedImage.note}
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            {gallery.map((item, index) => {
-              const active = selectedImageIndex === index;
-              return (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={() => setSelectedImageIndex(index)}
-                  aria-pressed={active}
-                  className={`group overflow-hidden rounded-[2px] border bg-[#fffaf2] text-left transition-all ${
-                    active
-                      ? "border-[#17110d] shadow-[0_14px_34px_rgba(49,38,24,0.14)]"
-                      : "border-[#d7c5aa] hover:border-[#b59663]"
-                  }`}
-                >
-                  <img
-                    src={item.src}
-                    alt={`${car.name} ${item.label} thumbnail`}
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    style={{ objectPosition: item.objectPosition }}
-                  />
-                  <span className="block px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[#17110d]">
-                    {item.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            {specHighlights.map(([icon, label, value]) => (
-              <div
-                key={label}
-                className="bespoke-frame rounded-[2px] bg-white/55 p-4"
-              >
-                <div className="mb-3 inline-flex rounded-lg border border-[#d7c5aa] bg-[#fffaf2] p-2 text-[#7f1d2d]">
-                  {createElement(icon, { size: 16 })}
-                </div>
-                <p className="text-[10px] uppercase text-[#7a6b5f]">{label}</p>
-                <p className="mt-1 text-sm font-semibold text-[#17110d]">
-                  {value}
-                </p>
-              </div>
-            ))}
-          </div>
-        </MotionDiv>
-
-        <MotionDiv
-          className="bespoke-frame luxury-panel rounded-[2px] p-6 lg:sticky lg:top-24 lg:self-start"
-          variants={fadeUp}
+      <div className="mx-auto max-w-[var(--page-max-width)] px-[var(--page-gutter)] pb-[var(--section-space-medium)] pt-10">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          data-cursor="link"
+          className="group mb-9 inline-flex items-center gap-3 text-sm font-semibold text-[var(--ink-muted)] transition-colors duration-[260ms] ease-[var(--ease-premium)] hover:text-[var(--oxblood)]"
         >
-          <div className="flex flex-col gap-6">
-            <div>
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-[#d7c5aa] bg-white/55 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[#7a6b5f]">
-                  {car.brand}
-                </span>
-                <span className="rounded-full border border-[#d7c5aa] bg-white/55 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[#7a6b5f]">
-                  {formatCategoryLabel(car.category)}
-                </span>
-              </div>
-              <h1
-                className="text-3xl font-light leading-snug text-[#17110d] sm:text-4xl"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                {car.name}
-              </h1>
-            </div>
+          <BackArrow />
+          <span className="transition-transform duration-[260ms] ease-[var(--ease-premium)] group-hover:-translate-x-0.5">
+            Back to collection
+          </span>
+        </button>
 
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-2xl font-semibold text-[#17110d]">
-                  {formatPrice(car.price)}
-                </span>
-                {car.originalPrice > car.price && (
-                  <>
-                    <span className="text-base text-[#7a6b5f] line-through">
-                      {formatPrice(car.originalPrice)}
-                    </span>
-                    <span className="rounded-full bg-[#f4e4e6] px-2 py-0.5 text-sm font-medium text-[#7f1d2d]">
-                      {discount}% off
-                    </span>
-                  </>
-                )}
-              </div>
-              <p className="mt-2 text-xs uppercase tracking-[0.2em] text-[#7a6b5f]">
-                Reservation price
-              </p>
-            </div>
-
-            <p className="text-sm leading-7 text-[#5f5148]">
-              {car.description}
-            </p>
-
-            <div className="bespoke-frame grid grid-cols-3 rounded-[2px] bg-white/50">
-              {[
-                ["Stock", isInStock ? `${car.stock} ready` : "Unavailable"],
-                ["Status", car.isNew ? "New arrival" : "Certified"],
-                ["Handoff", "Concierge"],
-              ].map(([label, value], index) => (
-                <div
-                  key={label}
-                  className={`p-3 ${index > 0 ? "border-l border-[#d7c5aa]" : ""}`}
-                >
-                  <p className="text-[10px] uppercase text-[#7a6b5f]">
-                    {label}
-                  </p>
-                  <p className="mt-1 text-xs font-semibold capitalize text-[#17110d]">
-                    {value}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {variants.length > 0 && (
-              <div>
-                <p className="mb-3 text-sm font-semibold text-[#17110d]">
-                  Choose configuration
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {variants.map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => {
-                        setSelectedVariant(v);
-                        setError("");
-                      }}
-                      className={`rounded-lg border px-4 py-2 text-sm transition-all ${
-                        activeVariant === v
-                          ? "border-[#17110d] bg-[#17110d] text-white"
-                          : "border-[#d7c5aa] bg-white/60 text-[#5f5148] hover:border-[#b59663] hover:text-[#17110d]"
-                      }`}
-                    >
-                      {v}
-                    </button>
-                  ))}
-                </div>
-                {error && <p className="mt-2 text-xs text-rose-500">{error}</p>}
-              </div>
-            )}
-
+        <section className="grid gap-10 lg:grid-cols-[minmax(0,1.65fr)_minmax(22rem,0.9fr)] lg:gap-14">
+          <MotionDiv variants={softReveal}>
             <button
               type="button"
-              onClick={handleAddToCart}
-              disabled={!isInStock}
-              className={`flex w-full items-center justify-center gap-2 rounded-[8px] py-3.5 text-sm font-semibold transition-all ${
-                !isInStock
-                  ? "cursor-not-allowed bg-[#eadcc8] text-[#7a6b5f]"
-                  : added
-                    ? "bg-green-600 text-white"
-                    : "bg-[#17110d] text-white hover:-translate-y-0.5 hover:bg-[#7f1d2d]"
-              }`}
+              onClick={() => setViewerOpen(true)}
+              data-cursor="expand"
+              className="group block w-full overflow-hidden bg-[var(--stone)] text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--oxblood)]"
+              aria-label={`Expand image of ${car.name}`}
             >
-              <AnimatePresence mode="wait" initial={false}>
-                <MotionSpan
-                  key={added ? "added" : "idle"}
-                  className="inline-flex items-center justify-center gap-2"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  {added ? (
-                    <>
-                      <Check size={16} /> Added to Cart
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingBag size={16} />{" "}
-                      {isInStock ? "Reserve Vehicle" : "Out of Stock"}
-                    </>
-                  )}
-                </MotionSpan>
+              <AnimatePresence mode="wait">
+                <MotionImg
+                  key={selectedImage?.src}
+                  src={selectedImage?.src}
+                  alt={car.name}
+                  className="aspect-[16/10] w-full object-cover transition-transform duration-[620ms] ease-[var(--ease-premium)] group-hover:scale-[1.025] group-active:scale-[1.01]"
+                  style={{
+                    objectPosition:
+                      selectedImage?.objectPosition ?? getVehicleObjectPosition(car.name),
+                  }}
+                  initial={{ opacity: 0, scale: 1.03 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.015 }}
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                />
               </AnimatePresence>
             </button>
 
-            <div className="grid gap-3 border-t border-[#d7c5aa] pt-6 sm:grid-cols-3">
-              {[
-                [Truck, "Enclosed delivery"],
-                [ShieldCheck, "Verified inventory"],
-                [Wand2, "Concierge support"],
-              ].map(([icon, text]) => (
-                <div
-                  key={text}
-                  className="flex items-center gap-2 text-xs text-[#7a6b5f]"
-                >
-                  {createElement(icon, {
-                    size: 15,
-                    className: "text-[#7f1d2d]",
-                  })}
-                  {text}
+            {gallery.length > 1 && (
+              <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
+                {gallery.map((item, index) => {
+                  const active = currentImageIndex === index;
+
+                  return (
+                    <button
+                      key={item.src}
+                      type="button"
+                      onClick={() => setSelectedImageIndex(index)}
+                      aria-label={`View image ${index + 1} of ${gallery.length}`}
+                      aria-pressed={active}
+                      data-cursor="view"
+                      className="group relative h-20 w-32 flex-shrink-0 overflow-hidden bg-[var(--stone)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--oxblood)]"
+                    >
+                      <img
+                        src={item.src}
+                        alt={`${car.name} thumbnail ${index + 1}`}
+                        className="h-full w-full object-cover transition-transform duration-[420ms] ease-[var(--ease-premium)] group-hover:scale-[1.035]"
+                        style={{ objectPosition: item.objectPosition }}
+                      />
+                      <span
+                        className={`absolute inset-x-0 bottom-0 h-0.5 transition-colors ${
+                          active ? "bg-[var(--oxblood)]" : "bg-transparent"
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </MotionDiv>
+
+          <MotionDiv
+            className="lg:sticky lg:top-24 lg:self-start"
+            variants={fadeUp}
+            transition={{ delay: 0.08 }}
+          >
+            <div className="border-y border-[var(--brass-line)] py-8">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--ink-muted)]">
+                {brand} · {categoryLabel}
+              </p>
+              <h1
+                className="mt-4 text-[clamp(2.75rem,5vw,4.8rem)] font-light leading-[0.94] text-[var(--ink)]"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                {model || car.name}
+              </h1>
+
+              <div className="mt-8">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--ink-muted)]">
+                  Vehicle price
+                </p>
+                <div className="mt-2 flex flex-wrap items-baseline gap-3">
+                  <span className="text-2xl font-semibold tabular-nums text-[var(--ink)]">
+                    {formatPrice(car.price)}
+                  </span>
+                  {Number(car.originalPrice) > Number(car.price) && (
+                    <span className="text-sm tabular-nums text-[var(--ink-muted)] line-through">
+                      {formatPrice(car.originalPrice)}
+                    </span>
+                  )}
                 </div>
-              ))}
-            </div>
-          </div>
-        </MotionDiv>
-      </div>
-
-      <MotionDiv
-        className="mt-16"
-        variants={fadeUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-80px" }}
-      >
-        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="luxury-chip mb-3">Vehicle Specification</p>
-            <h2
-              className="text-3xl font-light text-[#17110d]"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Performance and configuration
-            </h2>
-          </div>
-          <p className="max-w-xl text-sm leading-7 text-[#5f5148]">
-            Core figures are presented for quick inspection before the full
-            concierge handoff and verification workflow.
-          </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {specGrid.map(([icon, label, value]) => (
-            <div
-              key={label}
-              className="bespoke-frame flex items-start gap-4 rounded-[2px] bg-[#fffaf2]/80 p-5 hover-lift"
-            >
-              <div className="rounded-lg border border-[#d7c5aa] bg-white/65 p-2 text-[#7f1d2d]">
-                {createElement(icon, { size: 18 })}
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.18em] text-[#7a6b5f]">
-                  {label}
-                </p>
-                <p className="mt-1 text-sm font-semibold text-[#17110d]">
-                  {value}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </MotionDiv>
 
-      {/* Related */}
-      {related.length > 0 && (
-        <MotionDiv
-          className="mt-16"
+              <div className="mt-7 flex items-center gap-2 text-sm text-[var(--ink)]">
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    isInStock ? "bg-[var(--oxblood)]" : "bg-[var(--ink-muted)]"
+                  }`}
+                  aria-hidden="true"
+                />
+                {isInStock ? "Available for reservation" : "Currently unavailable"}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleReserve}
+                disabled={!isInStock}
+                data-cursor="link"
+                className={`group mt-8 inline-flex w-full items-center justify-center gap-4 rounded-[8px] px-6 py-3.5 text-sm font-semibold transition-all duration-[320ms] ease-[var(--ease-premium)] active:scale-[0.985] ${
+                  isInStock
+                    ? "bg-[var(--oxblood)] text-[var(--surface)] hover:bg-[var(--veloce-oxblood-deep)]"
+                    : "bg-[var(--stone)] text-[var(--ink-muted)]"
+                }`}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  <MotionSpan
+                    key={added ? "added" : "idle"}
+                    className="inline-flex items-center gap-3"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18 }}
+                  >
+                    {added ? (
+                      <>
+                        <Check size={16} />
+                        Reservation started
+                      </>
+                    ) : (
+                      <>
+                        {isInStock ? "Begin reservation" : "Unavailable"}
+                        {isInStock && <VeloceArrow />}
+                      </>
+                    )}
+                  </MotionSpan>
+                </AnimatePresence>
+              </button>
+            </div>
+          </MotionDiv>
+        </section>
+
+        <MotionSection
+          className="mt-[clamp(5rem,9vw,8rem)] max-w-3xl"
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-80px" }}
         >
           <h2
-            className="text-2xl font-light text-[#17110d] mb-6"
+            className="text-[clamp(2rem,3vw,3rem)] font-light text-[var(--ink)]"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            You may also like
+            About this vehicle
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-            {related.map((c) => (
-              <div
-                key={c.id}
-                className="cursor-pointer group"
-                onClick={() => navigate(`/products/${c.id}`)}
-              >
-                <img
-                  src={getCarImageByName(c.name, c.imageUrl)}
-                  alt={c.name}
-                  className="w-full aspect-[4/5] object-cover rounded-[10px] border border-[#d7c5aa] transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-[0_20px_48px_rgba(49,38,24,0.14)] bg-[#fffaf2]"
-                />
-                <p className="text-sm font-semibold text-[#17110d] mt-3">
-                  {c.name}
-                </p>
-                <p className="text-sm text-[#7a6b5f]">{formatPrice(c.price)}</p>
-              </div>
+          <div className="mt-6 space-y-5 text-base leading-8 text-[var(--ink-muted)]">
+            {story.slice(0, 2).map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
-        </MotionDiv>
-      )}
+        </MotionSection>
+
+        <MotionSection
+          className="mt-[clamp(5rem,9vw,8rem)]"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+        >
+          <h2
+            className="text-[clamp(2rem,3vw,3rem)] font-light text-[var(--ink)]"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Specifications
+          </h2>
+          <MotionDiv
+            className="mt-8 grid border-t border-[var(--brass-line)] md:grid-cols-2 lg:grid-cols-3"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+          >
+            {specificationRows.map(([label, value, note]) => (
+              <MotionDiv
+                key={label}
+                variants={softReveal}
+                className="border-b border-[var(--brass-line)] py-6 md:pr-8 lg:min-h-36"
+              >
+                <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--ink-muted)]">
+                  {label}
+                </p>
+                <p className="mt-3 text-lg font-medium leading-7 text-[var(--ink)]">
+                  {value}
+                </p>
+                {note && (
+                  <p className="mt-1 text-sm text-[var(--ink-muted)]">{note}</p>
+                )}
+              </MotionDiv>
+            ))}
+          </MotionDiv>
+        </MotionSection>
+
+        {relatedVehicles.length > 0 && (
+          <MotionSection
+            className="mt-[clamp(5rem,9vw,8rem)]"
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+          >
+            <h2
+              className="text-[clamp(2rem,3vw,3rem)] font-light text-[var(--ink)]"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Similar vehicles
+            </h2>
+
+            {relatedVehicles.length === 1 ? (
+              <button
+                type="button"
+                onClick={() => navigate(`/products/${relatedVehicles[0].id}`)}
+                data-cursor="view"
+                className="group mt-8 grid w-full gap-6 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--oxblood)] md:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)] md:items-end"
+              >
+                <img
+                  src={relatedVehicles[0].imageUrl}
+                  alt={relatedVehicles[0].name}
+                  className="aspect-[16/10] w-full object-cover transition-transform duration-[520ms] ease-[var(--ease-premium)] group-hover:scale-[1.015]"
+                  style={{
+                    objectPosition: getVehicleObjectPosition(relatedVehicles[0].name),
+                  }}
+                />
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--ink-muted)]">
+                    {formatCategoryLabel(relatedVehicles[0].category)}
+                  </p>
+                  <h3 className="mt-3 text-2xl font-medium text-[var(--ink)] transition-colors group-hover:text-[var(--oxblood)]">
+                    {relatedVehicles[0].name}
+                  </h3>
+                  <p className="mt-3 text-sm font-medium tabular-nums text-[var(--ink)]">
+                    {formatPrice(relatedVehicles[0].price)}
+                  </p>
+                  <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[var(--oxblood)]">
+                    View vehicle
+                    <VeloceArrow className="w-7" />
+                  </span>
+                </div>
+              </button>
+            ) : (
+              <MotionDiv
+                className="mt-8 grid grid-cols-1 gap-x-[var(--content-gap)] gap-y-12 sm:grid-cols-2 lg:grid-cols-3"
+                variants={staggerContainer}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-80px" }}
+              >
+                {relatedVehicles.map((item) => (
+                  <ProductCard key={item.id} product={item} showCategory />
+                ))}
+              </MotionDiv>
+            )}
+          </MotionSection>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {viewerOpen && selectedImage && (
+          <MotionDiv
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-[var(--dark-surface)] px-4 py-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${car.name} image viewer`}
+          >
+            <button
+              type="button"
+              onClick={() => setViewerOpen(false)}
+              data-cursor="link"
+              aria-label="Close image viewer"
+              className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-[8px] text-[var(--surface)] transition-colors hover:bg-[color-mix(in_srgb,var(--surface)_10%,transparent)]"
+            >
+              <CloseGlyph />
+            </button>
+
+            {gallery.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedImageIndex((index) => (index - 1 + gallery.length) % gallery.length)
+                  }
+                  data-cursor="link"
+                  aria-label="Previous image"
+                  className="absolute left-5 top-1/2 hidden -translate-y-1/2 text-[var(--surface)] transition-colors hover:text-[var(--brass)] sm:block"
+                >
+                  <BackArrow className="h-4 w-12" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedImageIndex((index) => (index + 1) % gallery.length)
+                  }
+                  data-cursor="link"
+                  aria-label="Next image"
+                  className="absolute right-5 top-1/2 hidden -translate-y-1/2 text-[var(--surface)] transition-colors hover:text-[var(--brass)] sm:block"
+                >
+                  <VeloceArrow className="h-4 w-12" />
+                </button>
+              </>
+            )}
+
+            <MotionImg
+              key={selectedImage.src}
+              src={selectedImage.src}
+              alt={car.name}
+              className="max-h-[82svh] max-w-[92vw] object-contain"
+              style={{ objectPosition: selectedImage.objectPosition }}
+              initial={{ opacity: 0, scale: 0.985 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.985 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            />
+
+            <p className="absolute bottom-5 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.2em] text-[color-mix(in_srgb,var(--surface)_72%,transparent)]">
+              {currentImageIndex + 1} / {gallery.length}
+            </p>
+          </MotionDiv>
+        )}
+      </AnimatePresence>
     </MotionDiv>
   );
 }

@@ -120,31 +120,29 @@ export function getVehicleSpecs(name, category) {
   };
 }
 
-export function getVehicleGallery(name, imageUrl) {
+export function getVehicleObjectPosition(name = "") {
   const normalizedName = normalize(name);
-  const isLuxury =
-    normalizedName.includes("rolls") ||
-    normalizedName.includes("aston") ||
-    normalizedName.includes("range");
 
-  return [
-    {
-      label: "Exterior",
-      note: "Primary inspection view",
-      src: imageUrl,
-      objectPosition: "center",
-    },
-    {
-      label: isLuxury ? "Presence" : "Profile",
-      note: isLuxury ? "Luxury stance" : "Performance stance",
-      src: imageUrl,
-      objectPosition: "52% 42%",
-    },
-    {
-      label: "Detail",
-      note: "Finish and proportion",
-      src: imageUrl,
-      objectPosition: "62% 50%",
-    },
-  ];
+  if (normalizedName.includes("mclaren")) return "52% 50%";
+  if (normalizedName.includes("aston")) return "46% 50%";
+  if (normalizedName.includes("rolls")) return "52% 50%";
+  if (normalizedName.includes("bmw")) return "50% 48%";
+  if (normalizedName.includes("ferrari")) return "48% 50%";
+  if (normalizedName.includes("porsche")) return "50% 50%";
+  if (normalizedName.includes("mercedes")) return "54% 50%";
+  if (normalizedName.includes("lamborghini")) return "50% 50%";
+
+  return "50% 50%";
+}
+
+export function getVehicleGallery(name, imageUrl, images = []) {
+  const uniqueImages = [...images, imageUrl]
+    .filter(Boolean)
+    .filter((src, index, list) => list.indexOf(src) === index);
+
+  return uniqueImages.map((src, index) => ({
+    src,
+    label: `View ${index + 1}`,
+    objectPosition: getVehicleObjectPosition(name),
+  }));
 }

@@ -79,7 +79,15 @@ export default function VeloceCursor() {
   const active = hoverMode !== "default";
   const visible = pointerInside;
   const ringSize =
-    hoverMode === "explore" ? 76 : hoverMode === "view" ? 70 : hoverMode === "search" ? 34 : active ? 54 : 40;
+    hoverMode === "explore" || hoverMode === "expand"
+      ? 76
+      : hoverMode === "view"
+        ? 70
+        : hoverMode === "search"
+          ? 34
+          : active
+            ? 54
+            : 40;
   const ringOffset = ringSize / 2;
   const cursorColor = active ? "var(--oxblood)" : "var(--ink)";
   const cursorSurface = active
@@ -140,6 +148,7 @@ export default function VeloceCursor() {
       >
         {hoverMode === "view" && <VeloceArrow className="w-7" />}
         {hoverMode === "explore" && "Explore"}
+        {hoverMode === "expand" && "Expand"}
       </MotionDiv>
     </>,
     document.body,
