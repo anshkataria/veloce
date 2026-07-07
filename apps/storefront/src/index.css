@@ -185,7 +185,6 @@ a {
 }
 
 .section-reveal {
-  opacity: 0;
   animation: fadeUp 0.75s ease forwards;
 }
 
@@ -368,5 +367,9 @@ a {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .veloce-intro {
+    display: none;
   }
 }
