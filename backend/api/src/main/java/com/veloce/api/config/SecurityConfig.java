@@ -51,6 +51,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,   "/api/v1/cars/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT,    "/api/v1/cars/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/cars/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,    "/api/v1/orders").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/api/v1/orders/*/status").hasRole("ADMIN")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
                         // everything else needs a valid token
