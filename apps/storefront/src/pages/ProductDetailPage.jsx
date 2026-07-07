@@ -1,5 +1,6 @@
 import { createElement, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { ShoppingBag, ArrowLeft, Check, ShieldCheck, Truck, Wand2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import useCartStore from "../store/cartStore";
@@ -7,6 +8,11 @@ import { carService } from "../services/carService";
 import { formatPrice } from "../utils/formatPrice";
 import { getCarImageByName } from "../utils/carImageMap";
 import { getDisplayInStock } from "../utils/catalogUtils";
+import { fadeUp, softReveal, staggerContainer } from "../utils/motionVariants";
+
+const MotionDiv = motion.div;
+const MotionImg = motion.img;
+const MotionSpan = motion.span;
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -88,7 +94,12 @@ export default function ProductDetailPage() {
   const isInStock = getDisplayInStock(car.name, car.inStock, car.stock);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 fade-in-up">
+    <MotionDiv
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10"
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+    >
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-sm text-[#7a6b5f] hover:text-[#17110d] transition-colors mb-8"
@@ -98,16 +109,25 @@ export default function ProductDetailPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
         {/* Image */}
-        <div className="bespoke-frame aspect-[3/4] rounded-[2px] overflow-hidden bg-[#fffaf2] shadow-[0_24px_70px_rgba(49,38,24,0.16)]">
-          <img
+        <MotionDiv
+          className="bespoke-frame aspect-[3/4] rounded-[2px] overflow-hidden bg-[#fffaf2] shadow-[0_24px_70px_rgba(49,38,24,0.16)]"
+          variants={softReveal}
+        >
+          <MotionImg
             src={imageUrl}
             alt={car.name}
             className="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+            initial={{ scale: 1.08, clipPath: "inset(0 0 18% 0)" }}
+            animate={{ scale: 1, clipPath: "inset(0 0 0% 0)" }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           />
-        </div>
+        </MotionDiv>
 
         {/* Details */}
-        <div className="bespoke-frame flex flex-col gap-6 luxury-panel rounded-[2px] p-6 lg:p-8">
+        <MotionDiv
+          className="bespoke-frame flex flex-col gap-6 luxury-panel rounded-[2px] p-6 lg:p-8"
+          variants={fadeUp}
+        >
           <div>
             <p className="text-xs text-[#7a6b5f] uppercase tracking-widest mb-2">
               {car.brand}
@@ -197,16 +217,27 @@ export default function ProductDetailPage() {
                   : "bg-[#17110d] text-white hover:bg-[#7f1d2d] hover:-translate-y-0.5"
             }`}
           >
-            {added ? (
-              <>
-                <Check size={16} /> Added to Cart
-              </>
-            ) : (
-              <>
-                <ShoppingBag size={16} />{" "}
-                {isInStock ? "Add to Cart" : "Out of Stock"}
-              </>
-            )}
+            <AnimatePresence mode="wait" initial={false}>
+              <MotionSpan
+                key={added ? "added" : "idle"}
+                className="inline-flex items-center justify-center gap-2"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.18 }}
+              >
+                {added ? (
+                  <>
+                    <Check size={16} /> Added to Cart
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag size={16} />{" "}
+                    {isInStock ? "Add to Cart" : "Out of Stock"}
+                  </>
+                )}
+              </MotionSpan>
+            </AnimatePresence>
           </button>
 
           <div className="grid gap-3 border-t border-[#d7c5aa] pt-6 sm:grid-cols-3">
@@ -224,12 +255,18 @@ export default function ProductDetailPage() {
               </div>
             ))}
           </div>
-        </div>
+        </MotionDiv>
       </div>
 
       {/* Related */}
       {related.length > 0 && (
-        <div className="mt-16">
+        <MotionDiv
+          className="mt-16"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
+        >
           <h2
             className="text-2xl font-light text-[#17110d] mb-6"
             style={{ fontFamily: "var(--font-display)" }}
@@ -255,8 +292,8 @@ export default function ProductDetailPage() {
               </div>
             ))}
           </div>
-        </div>
+        </MotionDiv>
       )}
-    </div>
+    </MotionDiv>
   );
 }
