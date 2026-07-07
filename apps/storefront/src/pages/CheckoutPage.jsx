@@ -1,8 +1,53 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import VeloceArrow from "../components/VeloceArrow";
 import useCartStore from "../store/cartStore";
 import { formatPrice } from "../utils/formatPrice";
 import { orderService } from "../services/orderService";
+import { getVehicleObjectPosition } from "../utils/vehicleDetails";
+import { formatCategoryLabel } from "../utils/catalogUtils";
+
+function splitVehicleName(product) {
+  const brand = product.brand || product.name?.split(" ")[0] || "Vehicle";
+  const model = product.name?.startsWith(brand)
+    ? product.name.slice(brand.length).trim()
+    : product.name;
+
+  return { brand, model: model || product.name };
+}
+
+function CheckoutField({ field, value, onChange, error }) {
+  const spanClass = field.col === 2 ? "sm:col-span-2" : "";
+
+  return (
+    <div className={spanClass}>
+      <label
+        htmlFor={field.name}
+        className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ink-muted)]"
+      >
+        {field.label}
+      </label>
+      <input
+        id={field.name}
+        type={field.type}
+        name={field.name}
+        value={value}
+        onChange={onChange}
+        autoComplete={field.autoComplete}
+        aria-invalid={error ? "true" : undefined}
+        aria-describedby={error ? `${field.name}-error` : undefined}
+        className={`h-13 min-h-[52px] w-full rounded-[8px] border bg-[color-mix(in_srgb,var(--surface)_80%,transparent)] px-4 text-sm text-[var(--ink)] outline-none transition-colors duration-[260ms] ease-[var(--ease-premium)] hover:border-[var(--ink-muted)] focus:border-[var(--oxblood)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--oxblood)_16%,transparent)] ${
+          error ? "border-[#a93d45]" : "border-[var(--brass-line-strong)]"
+        }`}
+      />
+      {error && (
+        <p id={`${field.name}-error`} className="mt-2 text-xs text-[#a93d45]">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
 
 export default function CheckoutPage() {
   const { items, getTotalPrice, clearCart } = useCartStore();
@@ -18,14 +63,19 @@ export default function CheckoutPage() {
     pincode: "",
   });
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (e) =>
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const handleChange = (event) => {
+    setForm((current) => ({
+      ...current,
+      [event.target.name]: event.target.value,
+    }));
+    setError("");
+    setFieldErrors((current) => ({ ...current, [event.target.name]: "" }));
+  };
 
   const total = getTotalPrice();
-  const shipping = total >= 999 ? 0 : 99;
-  const grandTotal = total + shipping;
 
   useEffect(() => {
     if (items.length === 0) {
@@ -33,8 +83,8 @@ export default function CheckoutPage() {
     }
   }, [items.length, navigate]);
 
-  const handlePlaceOrder = async (e) => {
-    e.preventDefault();
+  const handleConfirmReservation = async (event) => {
+    event.preventDefault();
     setError("");
 
     const token = localStorage.getItem("veloce_token");
@@ -43,9 +93,14 @@ export default function CheckoutPage() {
       return;
     }
 
-    const empty = Object.values(form).some((v) => !v.trim());
-    if (empty) {
-      setError("Please fill in all fields");
+    const requiredErrors = {};
+    Object.entries(form).forEach(([key, value]) => {
+      if (!value.trim()) requiredErrors[key] = "Required.";
+    });
+
+    if (Object.keys(requiredErrors).length > 0) {
+      setFieldErrors(requiredErrors);
+      setError("Complete the required client details.");
       return;
     }
 
@@ -72,7 +127,7 @@ export default function CheckoutPage() {
     } catch (err) {
       setError(
         err.response?.data?.error ||
-          "We couldn't place your order. Please try again.",
+          "We couldn't confirm this reservation. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -84,133 +139,159 @@ export default function CheckoutPage() {
   }
 
   const fields = [
-    { label: "Full Name", name: "name", type: "text", col: 2 },
-    { label: "Email", name: "email", type: "email", col: 1 },
-    { label: "Phone", name: "phone", type: "tel", col: 1 },
-    { label: "Address", name: "address", type: "text", col: 2 },
-    { label: "City", name: "city", type: "text", col: 1 },
-    { label: "State", name: "state", type: "text", col: 1 },
-    { label: "Pincode", name: "pincode", type: "text", col: 1 },
+    { label: "Full name", name: "name", type: "text", col: 2, autoComplete: "name" },
+    { label: "Email", name: "email", type: "email", col: 1, autoComplete: "email" },
+    { label: "Phone", name: "phone", type: "tel", col: 1, autoComplete: "tel" },
+    { label: "Address", name: "address", type: "text", col: 2, autoComplete: "street-address" },
+    { label: "City", name: "city", type: "text", col: 1, autoComplete: "address-level2" },
+    { label: "State", name: "state", type: "text", col: 1, autoComplete: "address-level1" },
+    { label: "Postcode", name: "pincode", type: "text", col: 1, autoComplete: "postal-code" },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 fade-in-up">
-      <div className="mb-8">
-        <p className="luxury-chip mb-3">Secure Handoff</p>
-        <h1 className="text-3xl font-light text-[#17110d]">Checkout</h1>
-      </div>
+    <main className="bg-[var(--canvas)]">
+      <div className="mx-auto max-w-[var(--page-max-width)] px-[var(--page-gutter)] py-[clamp(3.5rem,7vw,6rem)]">
+        <header className="mb-9">
+          <p className="text-[11px] uppercase tracking-[0.26em] text-[var(--ink-muted)]">
+            Secure handoff
+          </p>
+          <h1
+            className="mt-4 text-[clamp(2.85rem,5vw,4.75rem)] font-light leading-[0.98] text-[var(--ink)]"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Reservation Details
+          </h1>
+        </header>
 
-      <form onSubmit={handlePlaceOrder}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* ── SHIPPING FORM ── */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bespoke-frame luxury-panel rounded-[2px] p-6">
-              <h2 className="text-sm font-semibold text-[#17110d] uppercase tracking-wide mb-5">
-                Shipping Details
-              </h2>
+        <form onSubmit={handleConfirmReservation}>
+          <div className="grid gap-12 lg:grid-cols-[minmax(0,0.64fr)_minmax(22rem,0.36fr)] lg:gap-16">
+            <section className="min-w-0">
+              <div className="border-y border-[var(--brass-line)] py-7">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--ink)]">
+                  Client Details
+                </h2>
 
-              {error && (
-                <div className="bg-[#f4e4e6] text-[#7f1d2d] text-sm px-4 py-3 rounded-xl mb-4">
-                  {error}
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                {fields.map((field) => (
-                  <div
-                    key={field.name}
-                    className={field.col === 2 ? "col-span-2" : "col-span-1"}
+                {error && (
+                  <p
+                    role="alert"
+                    className="mt-5 border-l-2 border-[#a93d45] py-1 pl-3 text-sm text-[#a93d45]"
                   >
-                    <label className="block text-xs font-semibold text-[#5f5148] mb-1.5 uppercase tracking-wide">
-                      {field.label}
-                    </label>
-                    <input
-                      type={field.type}
-                      name={field.name}
+                    {error}
+                  </p>
+                )}
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  {fields.map((field) => (
+                    <CheckoutField
+                      key={field.name}
+                      field={field}
                       value={form[field.name]}
                       onChange={handleChange}
-                      className="w-full border border-[#d7c5aa] rounded-[10px] px-4 py-3 text-sm text-[#17110d]
-                                 focus:outline-none focus:ring-1 focus:ring-[#b59663] bg-white/75 transition-shadow"
+                      error={fieldErrors[field.name]}
                     />
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-8 border-y border-[var(--brass-line)] py-7">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--ink)]">
+                  Reservation Process
+                </h2>
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--ink-muted)]">
+                  No payment is collected at this stage. Availability, delivery, and
+                  handoff details are confirmed after submission.
+                </p>
+              </div>
+            </section>
+
+            <aside className="lg:sticky lg:top-24 lg:self-start">
+              <div className="border-y border-[var(--brass-line)] py-7">
+                <h2 className="text-lg font-semibold text-[var(--ink)]">
+                  Reservation Summary
+                </h2>
+
+                <div className="mt-6 space-y-6">
+                  {items.map(({ product }) => {
+                    const { brand, model } = splitVehicleName(product);
+                    const imageSrc = product.images?.[0] ?? product.imageUrl;
+
+                    return (
+                      <div key={product.id} className="grid gap-4">
+                        {imageSrc && (
+                          <Link
+                            to={`/products/${product.id}`}
+                            data-cursor="view"
+                            className="group block overflow-hidden bg-[var(--stone)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--oxblood)]"
+                          >
+                            <img
+                              src={imageSrc}
+                              alt={product.name}
+                              className="aspect-[16/10] w-full object-cover transition-transform duration-[520ms] ease-[var(--ease-premium)] group-hover:scale-[1.025]"
+                              style={{ objectPosition: getVehicleObjectPosition(product.name) }}
+                            />
+                          </Link>
+                        )}
+                        <div>
+                          <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--ink-muted)]">
+                            {brand}
+                          </p>
+                          <Link
+                            to={`/products/${product.id}`}
+                            data-cursor="link"
+                            className="mt-2 block text-xl font-medium leading-tight text-[var(--ink)] transition-colors hover:text-[var(--oxblood)]"
+                          >
+                            {model}
+                          </Link>
+                          {product.category && (
+                            <p className="mt-2 text-sm text-[var(--ink-muted)]">
+                              {formatCategoryLabel(product.category)}
+                            </p>
+                          )}
+                          <p className="mt-5 text-[11px] uppercase tracking-[0.2em] text-[var(--ink-muted)]">
+                            Vehicle price
+                          </p>
+                          <p className="mt-2 text-lg font-semibold tabular-nums text-[var(--ink)]">
+                            {formatPrice(product.price)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-7 space-y-4 border-t border-[var(--brass-line)] pt-6 text-sm">
+                  <div className="flex items-start justify-between gap-6 text-[var(--ink-muted)]">
+                    <span>Vehicle price</span>
+                    <span className="font-medium tabular-nums text-[var(--ink)]">
+                      {formatPrice(total)}
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bespoke-frame luxury-panel rounded-[2px] p-6">
-              <h2 className="text-sm font-semibold text-[#17110d] uppercase tracking-wide mb-3">
-                Payment
-              </h2>
-              <div className="bespoke-frame rounded-[2px] bg-white/45 p-4 text-center text-sm text-[#7a6b5f]">
-                Reservation orders are recorded after account verification. A
-                payment provider can be connected before public launch.
-              </div>
-            </div>
-          </div>
-
-          {/* ── ORDER SUMMARY ── */}
-          <div className="lg:col-span-1">
-            <div className="bespoke-frame luxury-panel rounded-[2px] p-6 sticky top-24 space-y-4">
-              <h2 className="text-base font-semibold text-[#17110d]">
-                Your Order
-              </h2>
-
-              <div className="space-y-3">
-                {items.map(({ product, size, quantity }) => (
-                  <div key={`${product.id}-${size}`} className="flex gap-3">
-                    <img
-                      src={product.images[0]}
-                      alt={product.name}
-                      className="w-14 h-18 object-cover rounded-lg flex-shrink-0 border border-[#d7c5aa]"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-[#17110d] truncate">
-                        {product.name}
-                      </p>
-                      <p className="text-xs text-[#7a6b5f] mt-0.5">
-                        Variant: {size} · Qty: {quantity}
-                      </p>
-                      <p className="text-xs font-semibold text-[#17110d] mt-1">
-                        {formatPrice(product.price * quantity)}
-                      </p>
-                    </div>
+                  <div className="flex items-start justify-between gap-6 text-[var(--ink-muted)]">
+                    <span>Delivery handoff</span>
+                    <span className="max-w-[11rem] text-right text-[var(--ink)]">
+                      Arranged with concierge
+                    </span>
                   </div>
-                ))}
-              </div>
+                  <div className="flex items-baseline justify-between gap-6 border-t border-[var(--brass-line)] pt-5 font-semibold text-[var(--ink)]">
+                    <span>Total</span>
+                    <span className="text-xl tabular-nums">{formatPrice(total)}</span>
+                  </div>
+                </div>
 
-              <div className="border-t border-[#d7c5aa] pt-4 space-y-2 text-sm">
-                <div className="flex justify-between text-[#5f5148]">
-                  <span>Subtotal</span>
-                  <span>{formatPrice(total)}</span>
-                </div>
-                <div className="flex justify-between text-[#5f5148]">
-                  <span>Shipping</span>
-                  <span>
-                    {shipping === 0 ? (
-                      <span className="text-green-600">Free</span>
-                    ) : (
-                      formatPrice(shipping)
-                    )}
-                  </span>
-                </div>
-                <div className="flex justify-between font-semibold text-[#17110d] pt-2 border-t border-[#d7c5aa]">
-                  <span>Total</span>
-                  <span>{formatPrice(grandTotal)}</span>
-                </div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  data-cursor="link"
+                  className="group mt-7 inline-flex h-12 w-full items-center justify-center gap-4 rounded-[8px] bg-[var(--oxblood)] px-6 text-sm font-semibold text-[var(--surface)] transition-all duration-[320ms] ease-[var(--ease-premium)] hover:bg-[var(--veloce-oxblood-deep)] active:scale-[0.985] disabled:opacity-70"
+                >
+                  {isSubmitting ? "Confirming..." : "Confirm Reservation"}
+                  {!isSubmitting && <VeloceArrow />}
+                </button>
               </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full luxury-btn py-3.5 rounded-[8px] text-sm font-semibold
-                           disabled:cursor-not-allowed disabled:bg-[#d7c5aa] disabled:border-[#d7c5aa]"
-              >
-                {isSubmitting ? "Placing Order..." : "Place Order"}
-              </button>
-            </div>
+            </aside>
           </div>
-        </div>
-      </form>
-    </div>
+        </form>
+      </div>
+    </main>
   );
 }
