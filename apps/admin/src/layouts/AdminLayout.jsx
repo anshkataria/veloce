@@ -1,4 +1,5 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { createElement } from "react";
 import {
   LayoutDashboard,
   Package,
@@ -9,6 +10,7 @@ import {
   Moon,
   Menu,
   X,
+  Sparkles,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -38,9 +40,10 @@ export default function AdminLayout() {
       {/* ── SIDEBAR ── */}
       <aside
         style={{
-          width: "220px",
+          width: "248px",
           flexShrink: 0,
           background: "var(--sidebar-bg)",
+          borderRight: "1px solid rgba(181, 150, 99, 0.28)",
           display: "flex",
           flexDirection: "column",
           position: "fixed",
@@ -57,7 +60,7 @@ export default function AdminLayout() {
         <div
           style={{
             padding: "24px 20px",
-            borderBottom: "1px solid var(--border)",
+            borderBottom: "1px solid rgba(181, 150, 99, 0.28)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -66,10 +69,10 @@ export default function AdminLayout() {
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div
               style={{
-                width: "30px",
-                height: "30px",
+                width: "34px",
+                height: "34px",
                 background: "var(--sidebar-active-bg)",
-                borderRadius: "8px",
+                borderRadius: "10px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -77,16 +80,28 @@ export default function AdminLayout() {
             >
               <Store size={15} color="var(--sidebar-active)" />
             </div>
-            <span
-              style={{
-                color: "var(--sidebar-active)",
-                fontWeight: 600,
-                fontSize: "13px",
-                letterSpacing: "0.05em",
-              }}
-            >
-              VELOCE ADMIN
-            </span>
+            <div>
+              <span
+                style={{
+                  color: "var(--sidebar-active-bg)",
+                  fontWeight: 700,
+                  fontSize: "13px",
+                  letterSpacing: "0.18em",
+                }}
+              >
+                VELOCE
+              </span>
+              <p
+                style={{
+                  color: "var(--sidebar-text)",
+                  fontSize: "10px",
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Operations
+              </p>
+            </div>
           </div>
           <button
             onClick={() => setMobile(false)}
@@ -98,20 +113,20 @@ export default function AdminLayout() {
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, padding: "12px 10px" }}>
+        <nav style={{ flex: 1, padding: "14px 12px" }}>
           <p
             style={{
               color: "var(--sidebar-text)",
               fontSize: "10px",
               fontWeight: 600,
               letterSpacing: "0.1em",
-              padding: "8px 10px 6px",
+              padding: "8px 10px 10px",
               textTransform: "uppercase",
             }}
           >
             Menu
           </p>
-          {navItems.map(({ to, icon: Icon, label }) => (
+          {navItems.map(({ to, icon, label }) => (
             <NavLink
               key={to}
               to={to}
@@ -119,9 +134,9 @@ export default function AdminLayout() {
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
-                padding: "9px 10px",
-                borderRadius: "8px",
-                marginBottom: "2px",
+                padding: "11px 12px",
+                borderRadius: "10px",
+                marginBottom: "5px",
                 color: isActive
                   ? "var(--sidebar-active)"
                   : "var(--sidebar-text)",
@@ -131,10 +146,10 @@ export default function AdminLayout() {
                 textDecoration: "none",
                 fontSize: "13px",
                 fontWeight: isActive ? 500 : 400,
-                transition: "all 0.15s",
+                transition: "all 0.22s ease",
               })}
             >
-              <Icon size={15} />
+              {createElement(icon, { size: 15 })}
               {label}
             </NavLink>
           ))}
@@ -144,7 +159,7 @@ export default function AdminLayout() {
         <div
           style={{
             padding: "12px 10px",
-            borderTop: "1px solid var(--border)",
+            borderTop: "1px solid rgba(181, 150, 99, 0.28)",
             display: "flex",
             flexDirection: "column",
             gap: "2px",
@@ -157,8 +172,8 @@ export default function AdminLayout() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "9px 10px",
-              borderRadius: "8px",
+              padding: "10px 12px",
+              borderRadius: "10px",
               width: "100%",
               color: "var(--sidebar-text)",
               background: "transparent",
@@ -206,8 +221,8 @@ export default function AdminLayout() {
               display: "flex",
               alignItems: "center",
               gap: "10px",
-              padding: "9px 10px",
-              borderRadius: "8px",
+              padding: "10px 12px",
+              borderRadius: "10px",
               width: "100%",
               color: "var(--sidebar-text)",
               background: "transparent",
@@ -238,7 +253,7 @@ export default function AdminLayout() {
       {/* ── MAIN ── */}
       <div
         style={{
-          marginLeft: "220px",
+          marginLeft: "248px",
           flex: 1,
           display: "flex",
           flexDirection: "column",
@@ -249,8 +264,9 @@ export default function AdminLayout() {
         {/* Topbar */}
         <header
           style={{
-            height: "60px",
-            background: "var(--bg-card)",
+            height: "68px",
+            background: "rgba(255, 250, 242, 0.82)",
+            backdropFilter: "blur(18px)",
             borderBottom: "1px solid var(--border)",
             display: "flex",
             alignItems: "center",
@@ -268,19 +284,36 @@ export default function AdminLayout() {
           >
             <Menu size={20} />
           </button>
-          <div style={{ flex: 1 }} />
+          <div style={{ flex: 1 }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "7px 10px",
+                borderRadius: "999px",
+                border: "1px solid var(--border)",
+                background: "var(--bg-input)",
+                color: "var(--text-secondary)",
+                fontSize: "12px",
+              }}
+            >
+              <Sparkles size={13} color="var(--accent)" />
+              Atelier control room
+            </div>
+          </div>
           <div
             style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              background: "var(--bg-input)",
+              width: "36px",
+              height: "36px",
+              borderRadius: "10px",
+              background: "var(--accent)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: "12px",
               fontWeight: 600,
-              color: "var(--text-secondary)",
+              color: "var(--accent-fg)",
             }}
           >
             A
