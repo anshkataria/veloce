@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import ProductCard from "../components/ProductCard";
 import { carService } from "../services/carService";
 import { getCarImageByName } from "../utils/carImageMap";
 import { formatCategoryLabel, getDisplayInStock } from "../utils/catalogUtils";
+import { fadeUp, staggerContainer } from "../utils/motionVariants";
+
+const MotionDiv = motion.div;
+const MotionSection = motion.section;
 
 const CATEGORIES = ["all", "supercars", "sportscars", "luxury"];
 const SORT_OPTIONS = [
@@ -53,7 +58,12 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen">
-      <section className="border-b border-[#d7c5aa] bg-[#fffaf2]/70">
+      <MotionSection
+        className="border-b border-[#d7c5aa] bg-[#fffaf2]/70"
+        initial="hidden"
+        animate="visible"
+        variants={fadeUp}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
           <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
             <div>
@@ -93,11 +103,17 @@ export default function ProductsPage() {
             </div>
           </div>
         </div>
-      </section>
+      </MotionSection>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
         {/* Toolbar */}
-        <div className="bespoke-frame mb-7 rounded-[2px] bg-[#fffaf2]/90 p-3 shadow-[0_16px_36px_rgba(49,38,24,0.1)]">
+        <MotionDiv
+          className="bespoke-frame mb-7 rounded-[2px] bg-[#fffaf2]/90 p-3 shadow-[0_16px_36px_rgba(49,38,24,0.1)]"
+          variants={fadeUp}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.08 }}
+        >
           <div className="flex flex-col gap-3 lg:flex-row">
             <label className="relative flex-1">
               <Search
@@ -132,7 +148,7 @@ export default function ProductsPage() {
               <SlidersHorizontal size={15} /> Filters
             </button>
           </div>
-        </div>
+        </MotionDiv>
 
         <div className="grid gap-8 lg:grid-cols-[230px_minmax(0,1fr)]">
           {/* Sidebar */}
@@ -214,11 +230,16 @@ export default function ProductsPage() {
             )}
 
             {!isLoading && cars.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
+              <MotionDiv
+                className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
                 {cars.map((car) => (
                   <ProductCard key={car.id} product={car} />
                 ))}
-              </div>
+              </MotionDiv>
             )}
           </div>
         </div>
