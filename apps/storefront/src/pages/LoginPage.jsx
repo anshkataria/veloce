@@ -56,16 +56,16 @@ export default function LoginPage() {
         VELOCE member access
       </p>
       <h1
-        className="mt-4 text-[clamp(2.75rem,5vw,4.4rem)] font-light leading-[0.96] text-[var(--ink)]"
+        className="auth-title"
         style={{ fontFamily: "var(--font-display)" }}
       >
         Welcome back
       </h1>
-      <p className="mt-5 max-w-sm text-sm leading-6 text-[var(--ink-muted)]">
+      <p className="auth-supporting">
         Access your saved selections and reservation details.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-9 space-y-5">
+      <form onSubmit={handleSubmit} className="auth-fields">
         {searchParams.get("recover") === "password" && (
           <p className="border-l-2 border-[var(--brass-line-strong)] py-1 pl-3 text-sm text-[var(--ink-muted)]">
             Password recovery is not connected yet.
@@ -112,14 +112,14 @@ export default function LoginPage() {
           type="submit"
           disabled={loading}
           data-cursor="link"
-          className="group inline-flex h-12 w-full items-center justify-center gap-4 rounded-[8px] bg-[var(--oxblood)] px-6 text-sm font-semibold text-[var(--surface)] transition-all duration-[320ms] ease-[var(--ease-premium)] hover:bg-[var(--veloce-oxblood-deep)] active:scale-[0.985] disabled:opacity-70"
+          className="auth-primary group inline-flex w-full items-center justify-center gap-4 rounded-[8px] bg-[var(--oxblood)] px-6 text-sm font-semibold text-[var(--surface)] transition-all duration-[320ms] ease-[var(--ease-premium)] hover:bg-[var(--veloce-oxblood-deep)] active:scale-[0.985] disabled:opacity-70"
         >
           {loading ? "Signing in..." : "Sign in"}
           {!loading && <VeloceArrow />}
         </button>
       </form>
 
-      <p className="mt-7 text-sm text-[var(--ink-muted)]">
+      <p className="mt-6 text-sm text-[var(--ink-muted)]">
         New to VELOCE?{" "}
         <Link
           to="/register"

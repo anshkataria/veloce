@@ -72,16 +72,16 @@ export default function RegisterPage() {
         VELOCE member access
       </p>
       <h1
-        className="mt-4 text-[clamp(2.65rem,5vw,4.25rem)] font-light leading-[0.96] text-[var(--ink)]"
+        className="auth-title"
         style={{ fontFamily: "var(--font-display)" }}
       >
         Create your account
       </h1>
-      <p className="mt-5 max-w-sm text-sm leading-6 text-[var(--ink-muted)]">
+      <p className="auth-supporting">
         Create a private profile for selections and reservations.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+      <form onSubmit={handleSubmit} className="auth-fields">
         {error && (
           <p
             role="alert"
@@ -131,14 +131,14 @@ export default function RegisterPage() {
           type="submit"
           disabled={loading}
           data-cursor="link"
-          className="group inline-flex h-12 w-full items-center justify-center gap-4 rounded-[8px] bg-[var(--oxblood)] px-6 text-sm font-semibold text-[var(--surface)] transition-all duration-[320ms] ease-[var(--ease-premium)] hover:bg-[var(--veloce-oxblood-deep)] active:scale-[0.985] disabled:opacity-70"
+          className="auth-primary group inline-flex w-full items-center justify-center gap-4 rounded-[8px] bg-[var(--oxblood)] px-6 text-sm font-semibold text-[var(--surface)] transition-all duration-[320ms] ease-[var(--ease-premium)] hover:bg-[var(--veloce-oxblood-deep)] active:scale-[0.985] disabled:opacity-70"
         >
           {loading ? "Creating account..." : "Create account"}
           {!loading && <VeloceArrow />}
         </button>
       </form>
 
-      <p className="mt-7 text-sm text-[var(--ink-muted)]">
+      <p className="mt-6 text-sm text-[var(--ink-muted)]">
         Already a member?{" "}
         <Link
           to="/login"

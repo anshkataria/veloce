@@ -20,6 +20,8 @@ function ScrollToTop() {
 
 export default function MainLayout() {
   const location = useLocation();
+  const isAuthRoute =
+    location.pathname === "/login" || location.pathname === "/register";
   const [showIntro, setShowIntro] = useState(() => {
     return sessionStorage.getItem("veloce_intro_seen") !== "true";
   });
@@ -36,7 +38,11 @@ export default function MainLayout() {
   }, [showIntro]);
 
   return (
-    <div className="min-h-screen flex flex-col text-gray-900">
+    <div
+      className={`flex flex-col text-gray-900 ${
+        isAuthRoute ? "min-h-screen lg:h-dvh lg:overflow-hidden" : "min-h-screen"
+      }`}
+    >
       {showIntro && (
         <div className="veloce-intro" aria-hidden="true">
           <div className="veloce-intro__line" />
@@ -49,7 +55,7 @@ export default function MainLayout() {
       <AnimatePresence mode="wait" initial={false}>
         <MotionMain
           key={`${location.pathname}${location.search}`}
-          className="flex-1"
+          className="min-h-0 flex-1"
           initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
@@ -58,7 +64,7 @@ export default function MainLayout() {
           <Outlet />
         </MotionMain>
       </AnimatePresence>
-      <Footer />
+      {!isAuthRoute && <Footer />}
     </div>
   );
 }
