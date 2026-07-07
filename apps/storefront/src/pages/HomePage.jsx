@@ -1,10 +1,12 @@
+import { createElement } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  Truck,
   RefreshCw,
   Shield,
   HeadphonesIcon,
+  Gauge,
+  Globe2,
 } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +14,29 @@ import { carService } from "../services/carService";
 import { mockCategories } from "../data/mockProducts";
 import { getCarImageByName } from "../utils/carImageMap";
 import { getDisplayInStock } from "../utils/catalogUtils";
+
+const trustItems = [
+  {
+    icon: Globe2,
+    title: "Worldwide Delivery",
+    desc: "Enclosed transport coordination for every handoff",
+  },
+  {
+    icon: RefreshCw,
+    title: "7-Day Returns",
+    desc: "Review window for private-client confidence",
+  },
+  {
+    icon: Shield,
+    title: "Verified Inventory",
+    desc: "Vehicle data, stock state, and pricing kept aligned",
+  },
+  {
+    icon: HeadphonesIcon,
+    title: "Concierge Support",
+    desc: "A direct path from interest to reservation",
+  },
+];
 
 export default function HomePage() {
   const categoryImages = {
@@ -35,47 +60,75 @@ export default function HomePage() {
       inStock: getDisplayInStock(car.name, car.inStock, car.stock),
     };
   });
+  const heroStats = [
+    { label: "Verified cars", value: "32+" },
+    { label: "Avg. handoff", value: "72h" },
+    { label: "Markets served", value: "14" },
+  ];
 
   return (
     <div>
       {/* ───── HERO ───── */}
-      <section className="relative h-[90vh] min-h-[560px] flex items-center overflow-hidden bg-stone-100">
+      <section className="relative min-h-[680px] flex items-center overflow-hidden bg-[#f8f3ea]">
         <img
           src="/images/f40.jpg"
           alt="Hero"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
         {/* dark overlay so text is readable */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/35" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#fffaf2]/92 via-[#fffaf2]/66 to-[#17110d]/10" />
+        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#f8f3ea] to-transparent" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-xl">
-            <p className="luxury-chip mb-5">Grand Touring Collection</p>
-            <p className="text-white/80 text-[11px] tracking-[0.28em] uppercase mb-3">
-              New Arrivals
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="max-w-3xl">
+            <p className="luxury-chip mb-6">Grand Touring Collection</p>
+            <p className="text-[#7a6b5f] text-[11px] tracking-[0.28em] uppercase mb-3">
+              Private Inventory
             </p>
             <h1
               style={{ fontFamily: "var(--font-display)" }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-light text-white leading-[1.05] mb-6"
+              className="text-5xl sm:text-6xl lg:text-7xl font-light text-[#17110d] leading-[1.02] mb-6"
             >
-              Engineered for
+              Curated machines for
               <br />
-              <span className="font-normal tracking-[0.12em] text-4xl sm:text-5xl lg:text-6xl uppercase">
-                EXTRAORDINARY
+              <span className="font-normal text-4xl sm:text-5xl lg:text-6xl uppercase">
+                extraordinary drives
               </span>
             </h1>
-            <p className="text-white/75 text-base sm:text-lg mb-8 leading-relaxed">
-              Handpicked Supercars, Sportscars and Luxury cars. Delivered to
-              your door.
+            <p className="max-w-2xl text-[#5f5148] text-base sm:text-lg mb-8 leading-8">
+              Browse verified supercars, sportscars, and luxury vehicles with a
+              complete commerce journey from first inspection to order history.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
                 to="/products"
-                className="luxury-btn inline-flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-full"
+                className="luxury-btn inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-[8px]"
               >
-                Shop Now <ArrowRight size={16} />
+                Explore Inventory <ArrowRight size={16} />
+              </Link>
+              <Link
+                to="/products?category=supercars"
+                className="inline-flex items-center gap-2 rounded-[8px] border border-[#d7c5aa] bg-white/45 px-6 py-3 text-sm font-semibold text-[#17110d] transition-colors hover:border-[#b59663] hover:bg-[#fffaf2]"
+              >
+                View Supercars <Gauge size={16} />
               </Link>
             </div>
+          </div>
+
+          <div className="mt-14 grid max-w-2xl grid-cols-3 overflow-hidden rounded-[10px] border border-[#d7c5aa] bg-white/58 backdrop-blur shadow-[0_18px_50px_rgba(49,38,24,0.12)]">
+            {heroStats.map((stat, index) => (
+              <div
+                key={stat.label}
+                className={`p-4 sm:p-5 ${index > 0 ? "border-l border-[#d7c5aa]" : ""}`}
+              >
+                <p className="text-xl sm:text-2xl font-semibold text-[#17110d]">
+                  {stat.value}
+                </p>
+                <p className="mt-1 text-[10px] sm:text-[11px] uppercase text-[#7a6b5f]">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -84,13 +137,18 @@ export default function HomePage() {
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 section-reveal"
         style={{ animationDelay: "120ms" }}
       >
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-light text-[#f2f4f3] tracking-[0.08em] uppercase">
-            Shop by Category
-          </h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-8">
+          <div>
+            <p className="text-[11px] uppercase text-[#7a6b5f] mb-2">
+              Choose your lane
+            </p>
+            <h2 className="text-3xl font-light text-[#17110d]">
+              Shop by Category
+            </h2>
+          </div>
           <Link
             to="/products"
-            className="text-sm text-[#a9927d] hover:text-[#f2f4f3] flex items-center gap-1 transition-colors"
+            className="text-sm text-[#7f1d2d] hover:text-[#17110d] flex items-center gap-1 transition-colors"
           >
             View all <ArrowRight size={14} />
           </Link>
@@ -101,20 +159,20 @@ export default function HomePage() {
             <Link
               key={cat.id}
               to={`/products?category=${cat.slug}`}
-              className="group relative overflow-hidden rounded-2xl aspect-[3/4] soft-card"
+              className="group bespoke-frame relative overflow-hidden rounded-[2px] aspect-[3/4] bg-[#fffaf2] hover-lift"
             >
               <img
                 src={categoryImages[cat.slug] ?? cat.image}
                 alt={cat.name}
                 className="w-full h-full object-cover grayscale-[18%] contrast-110 transition-all duration-500 group-hover:scale-105 group-hover:grayscale-0"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
-              <div className="absolute bottom-5 left-5">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#17110d]/82 via-[#17110d]/12 to-transparent" />
+              <div className="absolute bottom-5 left-5 right-5">
                 <p className="text-white text-lg font-medium tracking-wide">
                   {cat.name}
                 </p>
-                <p className="text-white/70 text-[11px] tracking-[0.14em] uppercase">
-                  {cat.count} styles
+                <p className="mt-1 text-white/72 text-[11px] tracking-[0.14em] uppercase">
+                  {cat.count} curated listings
                 </p>
               </div>
             </Link>
@@ -126,19 +184,24 @@ export default function HomePage() {
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 section-reveal"
         style={{ animationDelay: "220ms" }}
       >
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-light text-[#f2f4f3] tracking-[0.08em] uppercase">
-            Featured Products
-          </h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-8">
+          <div>
+            <p className="text-[11px] uppercase text-[#7a6b5f] mb-2">
+              Live API inventory
+            </p>
+            <h2 className="text-3xl font-light text-[#17110d]">
+              Featured Vehicles
+            </h2>
+          </div>
           <Link
             to="/products"
-            className="text-sm text-[#a9927d] hover:text-[#f2f4f3] flex items-center gap-1 transition-colors"
+            className="text-sm text-[#7f1d2d] hover:text-[#17110d] flex items-center gap-1 transition-colors"
           >
             View all <ArrowRight size={14} />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
           {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -147,43 +210,25 @@ export default function HomePage() {
 
       {/* ───── TRUST STRIP ───── */}
       <section
-        className="border-t border-[#5e503f] bg-[#0a0908] section-reveal"
+        className="border-t border-[#d7c5aa] bg-[#fffaf2]/70 section-reveal"
         style={{ animationDelay: "320ms" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              {
-                icon: Truck,
-                title: "Worldwide Delivery",
-                desc: "White-glove global transport service",
-              },
-              {
-                icon: RefreshCw,
-                title: "7-Day Returns",
-                desc: "Hassle-free return policy",
-              },
-              {
-                icon: Shield,
-                title: "Verified Inventory",
-                desc: "Every car inspected & certified",
-              },
-              {
-                icon: HeadphonesIcon,
-                title: "Concierge Support",
-                desc: "Dedicated advisor, 24/7 worldwide",
-              },
-            ].map(({ icon: Icon, title, desc }) => (
+            {trustItems.map(({ icon, title, desc }) => (
               <div
                 key={title}
-                className="flex items-start gap-3 rounded-2xl border border-[#5e503f] bg-[#f2f4f3]/5 p-4"
+                className="bespoke-frame flex items-start gap-3 rounded-[2px] bg-white/60 p-5 hover-lift"
               >
-                <div className="p-2 bg-[#49111c]/40 border border-[#a9927d]/40 rounded-lg shadow-sm flex-shrink-0">
-                  <Icon size={18} className="text-[#f2f4f3]" />
+                <div className="p-2 bg-[#f1e4d0] border border-[#d7c5aa] rounded-lg shadow-sm flex-shrink-0">
+                  {createElement(icon, {
+                    size: 18,
+                    className: "text-[#7f1d2d]",
+                  })}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#f2f4f3]">{title}</p>
-                  <p className="text-xs text-[#d8d0c7] mt-0.5">{desc}</p>
+                  <p className="text-sm font-semibold text-[#17110d]">{title}</p>
+                  <p className="text-xs text-[#7a6b5f] mt-0.5">{desc}</p>
                 </div>
               </div>
             ))}
