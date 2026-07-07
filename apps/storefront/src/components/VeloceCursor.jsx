@@ -33,8 +33,21 @@ export default function VeloceCursor() {
       }
 
       const target = event.target instanceof Element ? event.target : null;
+      const textInput = target?.closest("input,textarea,[contenteditable='true']");
+      if (textInput) {
+        if (pointerInsideRef.current) {
+          pointerInsideRef.current = false;
+          setPointerInside(false);
+        }
+        hoverModeRef.current = "default";
+        setHoverMode("default");
+        mouseX.set(event.clientX);
+        mouseY.set(event.clientY);
+        return;
+      }
+
       const explicitCursor = target?.closest("[data-cursor]");
-      const interactive = target?.closest("a,button,input,select,textarea");
+      const interactive = target?.closest("a,button,select");
       const nextMode = explicitCursor?.dataset.cursor || (interactive ? "link" : "default");
 
       if (hoverModeRef.current !== nextMode) {
@@ -83,11 +96,13 @@ export default function VeloceCursor() {
       ? 76
       : hoverMode === "view"
         ? 70
+        : hoverMode === "remove"
+          ? 62
         : hoverMode === "search"
           ? 34
           : active
             ? 54
-            : 40;
+            : 30;
   const ringOffset = ringSize / 2;
   const cursorColor = active ? "var(--oxblood)" : "var(--ink)";
   const cursorSurface = active
@@ -149,6 +164,7 @@ export default function VeloceCursor() {
         {hoverMode === "view" && <VeloceArrow className="w-7" />}
         {hoverMode === "explore" && "Explore"}
         {hoverMode === "expand" && "Expand"}
+        {hoverMode === "remove" && "Remove"}
       </MotionDiv>
     </>,
     document.body,

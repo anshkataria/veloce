@@ -1,164 +1,204 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
+import VeloceArrow from "../components/VeloceArrow";
 import useCartStore from "../store/cartStore";
 import { formatPrice } from "../utils/formatPrice";
+import { getVehicleObjectPosition } from "../utils/vehicleDetails";
+
+function splitVehicleName(product) {
+  const brand = product.brand || product.name?.split(" ")[0] || "Vehicle";
+  const model = product.name?.startsWith(brand)
+    ? product.name.slice(brand.length).trim()
+    : product.name;
+
+  return { brand, model: model || product.name };
+}
+
+function SelectionVehicle({ item, onRemove }) {
+  const { product, size, quantity } = item;
+  const { brand, model } = splitVehicleName(product);
+  const imageSrc = product.images?.[0] ?? product.imageUrl;
+  const metadata = [product.category, size]
+    .filter(Boolean)
+    .filter((value) => !["standard", "reservation"].includes(value.toLowerCase()))
+    .join(" · ");
+
+  return (
+    <article className="grid gap-6 border-y border-[var(--brass-line)] py-6 md:grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)_minmax(11rem,0.36fr)] md:items-center">
+      <Link
+        to={`/products/${product.id}`}
+        data-cursor="view"
+        className="group block overflow-hidden bg-[var(--stone)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--oxblood)]"
+      >
+        {imageSrc ? (
+          <img
+            src={imageSrc}
+            alt={product.name}
+            className="aspect-[16/10] w-full object-cover transition-transform duration-[520ms] ease-[var(--ease-premium)] group-hover:scale-[1.025]"
+            style={{ objectPosition: getVehicleObjectPosition(product.name) }}
+          />
+        ) : (
+          <div className="flex aspect-[16/10] items-center justify-center bg-[var(--stone)] text-[11px] uppercase tracking-[0.18em] text-[var(--ink-muted)]">
+            Image pending
+          </div>
+        )}
+      </Link>
+
+      <div>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--ink-muted)]">
+          {brand}
+        </p>
+        <Link
+          to={`/products/${product.id}`}
+          data-cursor="link"
+          className="mt-3 block text-2xl font-medium leading-tight text-[var(--ink)] transition-colors hover:text-[var(--oxblood)]"
+        >
+          {model}
+        </Link>
+        {metadata && (
+          <p className="mt-3 text-sm text-[var(--ink-muted)]">{metadata}</p>
+        )}
+        {quantity > 1 && (
+          <p className="mt-3 text-xs text-[var(--ink-muted)]">
+            Quantity retained from your saved selection: {quantity}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={onRemove}
+          data-cursor="remove"
+          className="mt-6 text-sm font-medium text-[var(--ink-muted)] transition-colors hover:text-[var(--oxblood)]"
+        >
+          Remove selection
+        </button>
+      </div>
+
+      <div className="md:text-right">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--ink-muted)]">
+          Vehicle price
+        </p>
+        <p className="mt-2 text-lg font-semibold tabular-nums text-[var(--ink)]">
+          {formatPrice(product.price * quantity)}
+        </p>
+      </div>
+    </article>
+  );
+}
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, getTotalPrice } = useCartStore();
+  const { items, removeItem, getTotalPrice } = useCartStore();
   const navigate = useNavigate();
+  const total = getTotalPrice();
 
   if (items.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center fade-in-up">
-        <ShoppingBag size={48} className="mx-auto text-[#d7c5aa] mb-4" />
-        <h2 className="text-xl font-light text-[#17110d] mb-2">
-          Your cart is empty
-        </h2>
-        <p className="text-sm text-[#7a6b5f] mb-8">
-          Reserve a vehicle from the current inventory to begin checkout.
-        </p>
-        <Link
-          to="/products"
-          className="inline-flex items-center gap-2 luxury-btn px-6 py-3 rounded-[8px] text-sm font-semibold"
-        >
-          View Inventory
-        </Link>
-      </div>
+      <main className="min-h-[calc(100svh-3.5rem)] bg-[var(--canvas)]">
+        <section className="mx-auto max-w-[var(--page-max-width)] px-[var(--page-gutter)] py-[clamp(5rem,11vw,9rem)]">
+          <p className="text-[11px] uppercase tracking-[0.26em] text-[var(--ink-muted)]">
+            Your selection
+          </p>
+          <h1
+            className="mt-4 max-w-2xl text-[clamp(3rem,6vw,5.4rem)] font-light leading-[0.96] text-[var(--ink)]"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            No vehicle selected
+          </h1>
+          <p className="mt-6 max-w-md text-base leading-7 text-[var(--ink-muted)]">
+            Explore the collection and select a vehicle to begin your reservation.
+          </p>
+          <Link
+            to="/products"
+            data-cursor="explore"
+            className="group mt-9 inline-flex items-center gap-4 rounded-[8px] bg-[var(--oxblood)] px-6 py-3 text-sm font-semibold text-[var(--surface)] transition-all duration-[320ms] ease-[var(--ease-premium)] hover:bg-[var(--veloce-oxblood-deep)] active:scale-[0.985]"
+          >
+            Explore the collection
+            <VeloceArrow />
+          </Link>
+        </section>
+      </main>
     );
   }
 
-  const total = getTotalPrice();
-  const shipping = total >= 999 ? 0 : 99;
-  const grandTotal = total + shipping;
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 fade-in-up">
-      <div className="mb-8">
-        <p className="luxury-chip mb-3">Your Selection</p>
-        <h1 className="text-3xl font-light text-[#17110d]">Shopping Cart</h1>
-      </div>
+    <main className="min-h-[calc(100svh-3.5rem)] bg-[var(--canvas)]">
+      <div className="mx-auto max-w-[var(--page-max-width)] px-[var(--page-gutter)] py-[clamp(4.5rem,8vw,7rem)]">
+        <header className="mb-10">
+          <p className="text-[11px] uppercase tracking-[0.26em] text-[var(--ink-muted)]">
+            Your selection
+          </p>
+          <h1
+            className="mt-4 text-[clamp(3rem,5vw,4.75rem)] font-light leading-[0.98] text-[var(--ink)]"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Reservation
+          </h1>
+        </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* ── CART ITEMS ── */}
-        <div className="lg:col-span-2 space-y-4">
-          {items.map(({ product, size, quantity }) => (
-            <div
-              key={`${product.id}-${size}`}
-              className="bespoke-frame flex gap-4 p-4 luxury-panel rounded-[2px] hover-lift"
-            >
-              {/* Image */}
-              <Link to={`/products/${product.id}`} className="flex-shrink-0">
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="w-24 h-32 object-cover rounded-[10px] border border-[#d7c5aa]"
-                />
-              </Link>
-
-              {/* Info */}
-              <div className="flex-1 flex flex-col justify-between">
-                <div>
-                  <Link
-                    to={`/products/${product.id}`}
-                    className="text-sm font-semibold text-[#17110d] hover:text-[#7f1d2d] transition-colors"
-                  >
-                    {product.name}
-                  </Link>
-                  <p className="text-xs text-[#7a6b5f] mt-1">Variant: {size}</p>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  {/* Quantity controls */}
-                  <div className="flex items-center gap-2 border border-[#d7c5aa] rounded-full px-2 py-1 bg-white/70">
-                    <button
-                      onClick={() =>
-                        updateQuantity(product.id, size, quantity - 1)
-                      }
-                      className="p-1 text-[#7a6b5f] hover:text-[#17110d] transition-colors"
-                    >
-                      <Minus size={12} />
-                    </button>
-                    <span className="text-sm font-semibold w-4 text-center text-[#17110d]">
-                      {quantity}
-                    </span>
-                    <button
-                      onClick={() =>
-                        updateQuantity(product.id, size, quantity + 1)
-                      }
-                      className="p-1 text-[#7a6b5f] hover:text-[#17110d] transition-colors"
-                    >
-                      <Plus size={12} />
-                    </button>
-                  </div>
-
-                  {/* Price + delete */}
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-[#17110d]">
-                      {formatPrice(product.price * quantity)}
-                    </span>
-                    <button
-                      onClick={() => removeItem(product.id, size)}
-                      className="text-[#b8aa98] hover:text-[#7f1d2d] transition-colors"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── ORDER SUMMARY ── */}
-        <div className="lg:col-span-1">
-          <div className="bespoke-frame luxury-panel rounded-[2px] p-6 sticky top-24 space-y-4">
-            <h2 className="text-base font-semibold text-[#17110d]">
-              Order Summary
-            </h2>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between text-[#5f5148]">
-                <span>Subtotal</span>
-                <span>{formatPrice(total)}</span>
-              </div>
-              <div className="flex justify-between text-[#5f5148]">
-                <span>Shipping</span>
-                <span>
-                  {shipping === 0 ? (
-                    <span className="text-green-600">Free</span>
-                  ) : (
-                    formatPrice(shipping)
-                  )}
-                </span>
-              </div>
-              {shipping > 0 && (
-                <p className="text-xs text-[#7a6b5f]">
-                  Add {formatPrice(999 - total)} more for free shipping
-                </p>
-              )}
-            </div>
-
-            <div className="border-t border-[#d7c5aa] pt-4 flex justify-between font-semibold text-[#17110d]">
-              <span>Total</span>
-              <span>{formatPrice(grandTotal)}</span>
-            </div>
-
-            <button
-              onClick={() => navigate("/checkout")}
-              className="w-full luxury-btn py-3.5 rounded-[8px] text-sm font-semibold"
-            >
-              Proceed to Checkout
-            </button>
-
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,0.65fr)_minmax(22rem,0.35fr)] lg:gap-16">
+          <section className="space-y-0" aria-label="Selected vehicles">
+            {items.map((item) => (
+              <SelectionVehicle
+                key={`${item.product.id}-${item.size}`}
+                item={item}
+                onRemove={() => removeItem(item.product.id, item.size)}
+              />
+            ))}
             <Link
               to="/products"
-              className="block text-center text-sm text-[#7a6b5f] hover:text-[#17110d] transition-colors"
+              data-cursor="link"
+              className="group mt-8 inline-flex items-center gap-3 text-sm font-semibold text-[var(--ink-muted)] transition-colors hover:text-[var(--oxblood)]"
             >
-              Continue Shopping
+              Continue exploring
+              <VeloceArrow className="w-7" />
             </Link>
-          </div>
+          </section>
+
+          <aside className="lg:sticky lg:top-24 lg:self-start">
+            <div className="border-y border-[var(--brass-line)] py-7">
+              <h2 className="text-lg font-semibold text-[var(--ink)]">
+                Reservation Summary
+              </h2>
+
+              <div className="mt-6 space-y-5 text-sm">
+                <div className="flex items-start justify-between gap-6 text-[var(--ink-muted)]">
+                  <span>Vehicle</span>
+                  <span className="font-medium tabular-nums text-[var(--ink)]">
+                    {formatPrice(total)}
+                  </span>
+                </div>
+                <div className="flex items-start justify-between gap-6 text-[var(--ink-muted)]">
+                  <span>Delivery</span>
+                  <span className="max-w-[11rem] text-right text-[var(--ink)]">
+                    Arranged with concierge
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-7 flex items-baseline justify-between gap-6 border-t border-[var(--brass-line)] pt-6">
+                <span className="text-sm font-semibold text-[var(--ink)]">
+                  Vehicle total
+                </span>
+                <span className="text-xl font-semibold tabular-nums text-[var(--ink)]">
+                  {formatPrice(total)}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate("/checkout")}
+                data-cursor="link"
+                className="group mt-7 inline-flex h-12 w-full items-center justify-center gap-4 rounded-[8px] bg-[var(--oxblood)] px-6 text-sm font-semibold text-[var(--surface)] transition-all duration-[320ms] ease-[var(--ease-premium)] hover:bg-[var(--veloce-oxblood-deep)] active:scale-[0.985]"
+              >
+                Continue to reservation
+                <VeloceArrow />
+              </button>
+
+              <p className="mt-5 text-sm leading-6 text-[var(--ink-muted)]">
+                Final delivery and handover details are confirmed during the reservation process.
+              </p>
+            </div>
+          </aside>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

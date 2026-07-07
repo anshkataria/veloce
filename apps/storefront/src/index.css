@@ -372,4 +372,10 @@ a {
   body * {
     cursor: none !important;
   }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    cursor: text !important;
+  }
 }
