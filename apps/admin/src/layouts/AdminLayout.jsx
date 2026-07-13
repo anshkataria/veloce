@@ -1,18 +1,15 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { createElement } from "react";
+import { createElement, useState } from "react";
 import {
   LayoutDashboard,
   Package,
   ShoppingBag,
   LogOut,
   Store,
-  Sun,
-  Moon,
   Menu,
   X,
   Sparkles,
 } from "lucide-react";
-import { useState, useEffect } from "react";
 
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -21,217 +18,76 @@ const navItems = [
 ];
 
 export default function AdminLayout() {
-  const [dark, setDark] = useState(
-    () => localStorage.getItem("admin-theme") === "dark",
-  );
   const [mobileOpen, setMobile] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    document.documentElement.setAttribute(
-      "data-theme",
-      dark ? "dark" : "light",
-    );
-    localStorage.setItem("admin-theme", dark ? "dark" : "light");
-  }, [dark]);
-
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="flex min-h-screen bg-[var(--canvas)] text-[var(--ink)] font-body selection:bg-[var(--brass)] selection:text-[var(--ink)]">
       {/* ── SIDEBAR ── */}
       <aside
-        style={{
-          width: "248px",
-          flexShrink: 0,
-          background: "var(--sidebar-bg)",
-          borderRight: "1px solid rgba(181, 150, 99, 0.28)",
-          display: "flex",
-          flexDirection: "column",
-          position: "fixed",
-          top: 0,
-          left: 0,
-          bottom: 0,
-          zIndex: 50,
-          transform: mobileOpen ? "translateX(0)" : undefined,
-          transition: "transform 0.3s",
-        }}
-        className={!mobileOpen ? "max-lg:hidden lg:flex" : "flex"}
+        className={`fixed inset-y-0 left-0 z-50 flex w-[248px] flex-col bg-[var(--surface)] border-r border-[var(--veloce-border)] transition-transform duration-300 ease-[var(--ease-premium)] lg:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         {/* Logo */}
-        <div
-          style={{
-            padding: "24px 20px",
-            borderBottom: "1px solid rgba(181, 150, 99, 0.28)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div
-              style={{
-                width: "34px",
-                height: "34px",
-                background: "var(--sidebar-active-bg)",
-                borderRadius: "10px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Store size={15} color="var(--sidebar-active)" />
+        <div className="flex items-center justify-between border-b border-[var(--veloce-border)] px-6 py-[22px]">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--stone)]">
+              <Store size={18} className="text-[var(--oxblood)]" />
             </div>
             <div>
-              <span
-                style={{
-                  color: "var(--sidebar-active-bg)",
-                  fontWeight: 700,
-                  fontSize: "13px",
-                  letterSpacing: "0.18em",
-                }}
-              >
+              <span className="font-display text-sm font-bold tracking-[0.2em] text-[var(--ink)] uppercase">
                 VELOCE
               </span>
-              <p
-                style={{
-                  color: "var(--sidebar-text)",
-                  fontSize: "10px",
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                }}
-              >
+              <p className="mt-0.5 text-[9px] font-medium tracking-[0.15em] text-[var(--ink-muted)] uppercase">
                 Operations
               </p>
             </div>
           </div>
           <button
             onClick={() => setMobile(false)}
-            className="lg:hidden"
-            style={{ color: "var(--sidebar-text)" }}
+            className="lg:hidden text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors"
           >
-            <X size={16} />
+            <X size={20} />
           </button>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, padding: "14px 12px" }}>
-          <p
-            style={{
-              color: "var(--sidebar-text)",
-              fontSize: "10px",
-              fontWeight: 600,
-              letterSpacing: "0.1em",
-              padding: "8px 10px 10px",
-              textTransform: "uppercase",
-            }}
-          >
+        <nav className="flex-1 p-4">
+          <p className="px-3 pb-3 pt-2 text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
             Menu
           </p>
-          {navItems.map(({ to, icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              style={({ isActive }) => ({
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "11px 12px",
-                borderRadius: "10px",
-                marginBottom: "5px",
-                color: isActive
-                  ? "var(--sidebar-active)"
-                  : "var(--sidebar-text)",
-                background: isActive
-                  ? "var(--sidebar-active-bg)"
-                  : "transparent",
-                textDecoration: "none",
-                fontSize: "13px",
-                fontWeight: isActive ? 500 : 400,
-                transition: "all 0.22s ease",
-              })}
-            >
-              {createElement(icon, { size: 15 })}
-              {label}
-            </NavLink>
-          ))}
+          <div className="flex flex-col gap-1">
+            {navItems.map(({ to, icon, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] transition-all duration-[240ms] ease-[var(--ease-premium)] ${
+                    isActive
+                      ? "bg-[var(--stone)] font-medium text-[var(--oxblood)] shadow-sm"
+                      : "text-[var(--ink-muted)] hover:bg-[var(--stone)]/50 hover:text-[var(--ink)]"
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {createElement(icon, { size: 16, strokeWidth: isActive ? 2.5 : 2 })}
+                    {label}
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
         </nav>
 
         {/* Bottom */}
-        <div
-          style={{
-            padding: "12px 10px",
-            borderTop: "1px solid rgba(181, 150, 99, 0.28)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "2px",
-          }}
-        >
-          {/* Dark mode toggle */}
-          <button
-            onClick={() => setDark((d) => !d)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "10px 12px",
-              borderRadius: "10px",
-              width: "100%",
-              color: "var(--sidebar-text)",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "13px",
-            }}
-          >
-            <span
-              style={{ display: "flex", alignItems: "center", gap: "10px" }}
-            >
-              {dark ? <Sun size={15} /> : <Moon size={15} />}
-              {dark ? "Light mode" : "Dark mode"}
-            </span>
-            {/* Toggle pill */}
-            <div
-              style={{
-                width: "32px",
-                height: "18px",
-                borderRadius: "9px",
-                background: dark ? "var(--accent)" : "var(--sidebar-active-bg)",
-                position: "relative",
-                transition: "background 0.3s",
-                flexShrink: 0,
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  top: "3px",
-                  left: dark ? "17px" : "3px",
-                  width: "12px",
-                  height: "12px",
-                  borderRadius: "50%",
-                  background: "var(--accent-fg)",
-                  transition: "left 0.3s",
-                }}
-              />
-            </div>
-          </button>
-
+        <div className="flex flex-col gap-1 border-t border-[var(--veloce-border)] p-4">
           <button
             onClick={() => navigate("/login")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              padding: "10px 12px",
-              borderRadius: "10px",
-              width: "100%",
-              color: "var(--sidebar-text)",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "13px",
-            }}
+            className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[13px] text-[var(--ink-muted)] transition-all duration-[240ms] ease-[var(--ease-premium)] hover:bg-[var(--stone)]/50 hover:text-[var(--ink)]"
           >
-            <LogOut size={15} />
+            <LogOut size={16} className="transition-transform group-hover:-translate-x-0.5" />
             Logout
           </button>
         </div>
@@ -241,87 +97,35 @@ export default function AdminLayout() {
       {mobileOpen && (
         <div
           onClick={() => setMobile(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            zIndex: 40,
-          }}
+          className="fixed inset-0 z-40 bg-[var(--ink)]/20 backdrop-blur-sm lg:hidden transition-opacity"
         />
       )}
 
       {/* ── MAIN ── */}
-      <div
-        style={{
-          marginLeft: "248px",
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          minWidth: 0,
-        }}
-        className="max-lg:ml-0"
-      >
+      <div className="flex min-w-0 flex-1 flex-col lg:ml-[248px]">
         {/* Topbar */}
-        <header
-          style={{
-            height: "68px",
-            background: "rgba(255, 250, 242, 0.82)",
-            backdropFilter: "blur(18px)",
-            borderBottom: "1px solid var(--border)",
-            display: "flex",
-            alignItems: "center",
-            padding: "0 24px",
-            gap: "12px",
-            position: "sticky",
-            top: 0,
-            zIndex: 30,
-          }}
-        >
+        <header className="sticky top-0 z-30 flex h-[76px] items-center gap-4 glass-nav px-8">
           <button
             onClick={() => setMobile(true)}
-            className="lg:hidden"
-            style={{ color: "var(--text-secondary)" }}
+            className="lg:hidden text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors"
           >
-            <Menu size={20} />
+            <Menu size={22} />
           </button>
-          <div style={{ flex: 1 }}>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "7px 10px",
-                borderRadius: "999px",
-                border: "1px solid var(--border)",
-                background: "var(--bg-input)",
-                color: "var(--text-secondary)",
-                fontSize: "12px",
-              }}
-            >
-              <Sparkles size={13} color="var(--accent)" />
-              Atelier control room
+          <div className="flex-1">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--brass-line)] bg-[var(--surface)] px-3 py-1.5 shadow-sm">
+              <Sparkles size={14} className="text-[var(--brass)]" />
+              <span className="text-[11px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
+                Atelier Control Room
+              </span>
             </div>
           </div>
-          <div
-            style={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "10px",
-              background: "var(--accent)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "12px",
-              fontWeight: 600,
-              color: "var(--accent-fg)",
-            }}
-          >
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--oxblood)] text-xs font-semibold tracking-widest text-[var(--surface)] shadow-md transition-transform hover:scale-105 cursor-pointer">
             A
           </div>
         </header>
 
         {/* Content */}
-        <main style={{ flex: 1, padding: "28px 28px", overflowY: "auto" }}>
+        <main className="flex-1 overflow-y-auto p-6 md:p-10">
           <Outlet />
         </main>
       </div>

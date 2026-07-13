@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LockKeyhole, Store } from "lucide-react";
+import { LockKeyhole, ArrowRight } from "lucide-react";
 import { authService } from "../services/authService";
 import useAuthStore from "../store/authStore";
 
@@ -33,207 +33,97 @@ export default function LoginPage() {
     }
   };
 
-  const inputStyle = {
-    width: "100%",
-    padding: "10px 14px",
-    borderRadius: "9px",
-    border: "1px solid var(--border)",
-    background: "var(--bg-input)",
-    color: "var(--text-primary)",
-    fontSize: "13px",
-    outline: "none",
-    fontFamily: "var(--font-main)",
-  };
-
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle at 18% 12%, rgba(181,150,99,0.22), transparent 28%), var(--bg-main)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "16px",
-      }}
-    >
-      <div
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-          borderRadius: "22px",
-          width: "100%",
-          maxWidth: "420px",
-          padding: "36px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-          boxShadow: "0 24px 72px rgba(49, 38, 24, 0.14)",
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <div
-            style={{
-              width: "44px",
-              height: "44px",
-              background: "var(--text-primary)",
-              borderRadius: "14px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 16px",
-            }}
-          >
-            <Store size={20} color="var(--bg-card)" />
-          </div>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "6px 10px",
-              borderRadius: "999px",
-              border: "1px solid var(--border)",
-              background: "var(--bg-input)",
-              color: "var(--text-muted)",
-              fontSize: "11px",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              marginBottom: "12px",
-            }}
-          >
-            <LockKeyhole size={12} />
-            Control room
-          </div>
-          <h1
-            style={{
-              fontSize: "22px",
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              letterSpacing: "0.04em",
-            }}
-          >
-            VELOCE Admin
-          </h1>
-          <p
-            style={{
-              fontSize: "13px",
-              color: "var(--text-muted)",
-              marginTop: "4px",
-            }}
-          >
-            Sign in to manage your store
-          </p>
+    <div className="auth-page">
+      {/* Top Nav minimal for login */}
+      <header className="sticky top-0 z-50 glass-nav flex h-[var(--header-height)] items-center px-[var(--page-gutter)]">
+        <div className="font-display text-[1.35rem] font-semibold tracking-[0.32em] text-[var(--ink)] uppercase">
+          VELOCE
+        </div>
+      </header>
 
-          <div
-            style={{
-              marginTop: "12px",
-              padding: "10px 12px",
-              borderRadius: "9px",
-              border: "1px solid var(--border)",
-              background: "var(--bg-input)",
-              textAlign: "left",
-              fontSize: "12px",
-              color: "var(--text-secondary)",
-              lineHeight: 1.6,
-            }}
-          >
-            <div
-              style={{
-                fontSize: "11px",
-                color: "var(--text-muted)",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                marginBottom: "4px",
-                fontWeight: 600,
-              }}
-            >
-              Admin Login
-            </div>
-            <div>
-              Email: <strong>admin@veloce.in</strong>
-            </div>
-            <div>
-              Password: <strong>admin123</strong>
-            </div>
+      <div className="auth-layout">
+        {/* Left Visual Panel */}
+        <div className="auth-visual">
+          <img
+            src="https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&q=80"
+            alt="Luxury Car"
+            className="auth-visual__image"
+          />
+          <div className="auth-visual__gradient" />
+          <div className="auth-visual__copy">
+            <h2 className="font-display text-4xl font-semibold leading-tight tracking-[0.02em] text-[var(--surface)] sm:text-5xl lg:text-6xl">
+              Atelier control room.
+            </h2>
+            <p className="mt-4 text-sm font-medium tracking-widest text-[var(--surface)]/80 uppercase">
+              Private Operations Access
+            </p>
           </div>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "14px" }}
-        >
-          {error && (
-            <div
-              style={{
-                background: "var(--danger-bg)",
-                color: "var(--danger)",
-                fontSize: "13px",
-                padding: "10px 14px",
-                borderRadius: "9px",
-              }}
-            >
-              {error}
+        {/* Right Form Panel */}
+        <div className="auth-form-panel">
+          <div className="auth-form fade-in-up" style={{ animationDelay: "150ms" }}>
+            <div className="mb-2 text-xs font-semibold tracking-[0.2em] text-[var(--ink-muted)] uppercase">
+              Veloce Operations
             </div>
-          )}
+            <h1 className="auth-title">Welcome back</h1>
+            <p className="auth-supporting">
+              Access the central dashboard to manage inventory and concierge operations.
+            </p>
 
-          {[
-            {
-              label: "Email",
-              name: "email",
-              type: "email",
-            },
-            {
-              label: "Password",
-              name: "password",
-              type: "password",
-            },
-          ].map((f) => (
-            <div key={f.name}>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  color: "var(--text-muted)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.06em",
-                  marginBottom: "6px",
-                }}
+            <form onSubmit={handleSubmit} className="auth-fields">
+              {error && (
+                <div className="rounded-xl bg-[var(--danger-bg)] px-4 py-3 text-sm text-[var(--danger)]">
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <label className="mb-2 block text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className="auth-input w-full rounded-xl border border-[var(--veloce-border)] bg-transparent px-4 text-sm text-[var(--ink)] transition-colors focus:border-[var(--oxblood)] focus:outline-none"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="mb-2 block text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className="auth-input w-full rounded-xl border border-[var(--veloce-border)] bg-transparent px-4 text-sm text-[var(--ink)] transition-colors focus:border-[var(--oxblood)] focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="mt-2 rounded-xl border border-[var(--veloce-border)] bg-[var(--stone)]/30 p-4 text-xs leading-relaxed text-[var(--ink-muted)]">
+                <div className="mb-1 text-[10px] font-semibold tracking-widest uppercase">
+                  Admin Credentials
+                </div>
+                <div>Email: <strong className="text-[var(--ink)]">admin@veloce.in</strong></div>
+                <div>Password: <strong className="text-[var(--ink)]">admin123</strong></div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="luxury-btn auth-primary mt-2 flex w-full items-center justify-center gap-3 rounded-xl font-medium tracking-wide disabled:opacity-70"
               >
-                {f.label}
-              </label>
-              <input
-                type={f.type}
-                value={form[f.name]}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, [f.name]: e.target.value }))
-                }
-                style={inputStyle}
-              />
-            </div>
-          ))}
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              padding: "11px",
-              borderRadius: "9px",
-              border: "none",
-              background: "var(--accent)",
-              color: "var(--accent-fg)",
-              fontSize: "13px",
-              fontWeight: 500,
-              cursor: loading ? "not-allowed" : "pointer",
-              fontFamily: "var(--font-main)",
-              marginTop: "4px",
-              opacity: loading ? 0.7 : 1,
-            }}
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
+                {loading ? "Authenticating..." : "Sign In"}
+                <ArrowRight size={18} />
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -18,13 +18,6 @@ const STATUS = {
   CANCELLED: { color: "var(--danger)", bg: "var(--danger-bg)" },
 };
 
-const card = {
-  background: "var(--bg-card)",
-  border: "1px solid var(--border)",
-  borderRadius: "14px",
-  overflow: "hidden",
-};
-
 export default function OrdersPage() {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState("all");
@@ -61,55 +54,30 @@ export default function OrdersPage() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "12px",
-        }}
-      >
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1
-            style={{
-              fontSize: "20px",
-              fontWeight: 600,
-              color: "var(--text-primary)",
-            }}
-          >
+          <div className="mb-2 text-[10px] font-semibold tracking-[0.2em] text-[var(--ink-muted)] uppercase">
+            Concierge Operations
+          </div>
+          <h1 className="font-display text-3xl font-semibold tracking-wide text-[var(--ink)]">
             Orders
           </h1>
-          <p
-            style={{
-              color: "var(--text-muted)",
-              fontSize: "13px",
-              marginTop: "2px",
-            }}
-          >
-            {filtered.length} orders
+          <p className="mt-2 text-sm text-[var(--ink-muted)]">
+            {filtered.length} total orders to fulfill.
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+        <div className="flex flex-wrap gap-2 bg-[var(--surface)] p-1.5 rounded-full border border-[var(--veloce-border)] shadow-sm">
           {["all", ...STATUSES].map((s) => (
             <button
               key={s}
               onClick={() => setFilter(s)}
-              style={{
-                padding: "5px 14px",
-                borderRadius: "20px",
-                fontSize: "12px",
-                fontWeight: 500,
-                cursor: "pointer",
-                fontFamily: "var(--font-main)",
-                textTransform: "capitalize",
-                border: filter === s ? "none" : "1px solid var(--border)",
-                background: filter === s ? "var(--accent)" : "transparent",
-                color:
-                  filter === s ? "var(--accent-fg)" : "var(--text-secondary)",
-              }}
+              className={`rounded-full px-5 py-2 text-[11px] font-semibold tracking-widest uppercase transition-all duration-[240ms] ease-[var(--ease-premium)] ${
+                filter === s
+                  ? "bg-[var(--oxblood)] text-[var(--surface)] shadow-md"
+                  : "text-[var(--ink-muted)] hover:text-[var(--ink)]"
+              }`}
             >
               {s.toLowerCase()}
             </button>
@@ -118,37 +86,23 @@ export default function OrdersPage() {
       </div>
 
       {isLoading && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "40px",
-            color: "var(--text-muted)",
-            fontSize: "13px",
-          }}
-        >
+        <div className="py-12 text-center text-sm text-[var(--ink-muted)]">
           Loading orders...
         </div>
       )}
 
       {isError && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "40px",
-            color: "var(--danger)",
-            fontSize: "13px",
-          }}
-        >
+        <div className="py-12 text-center text-sm text-[var(--danger)]">
           Failed to load orders. Is the backend running?
         </div>
       )}
 
       {!isLoading && !isError && (
-        <div style={card}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div className="soft-card overflow-hidden bg-[var(--surface)] border-[var(--veloce-border)]">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                <tr className="border-b border-[var(--veloce-line)] bg-[var(--stone)]/20">
                   {[
                     "Order",
                     "Customer",
@@ -159,15 +113,7 @@ export default function OrdersPage() {
                   ].map((h) => (
                     <th
                       key={h}
-                      style={{
-                        textAlign: "left",
-                        padding: "10px 20px",
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        color: "var(--text-muted)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                      }}
+                      className="px-8 py-4 text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase"
                     >
                       {h}
                     </th>
@@ -179,12 +125,7 @@ export default function OrdersPage() {
                   <tr>
                     <td
                       colSpan={6}
-                      style={{
-                        padding: "40px",
-                        textAlign: "center",
-                        fontSize: "13px",
-                        color: "var(--text-muted)",
-                      }}
+                      className="px-8 py-12 text-center text-sm text-[var(--ink-muted)]"
                     >
                       No orders found
                     </td>
@@ -193,78 +134,38 @@ export default function OrdersPage() {
                   filtered.map((order, i) => (
                     <tr
                       key={order.id}
-                      style={{
-                        borderBottom:
-                          i < filtered.length - 1
-                            ? "1px solid var(--border)"
-                            : "none",
-                      }}
+                      className={`transition-colors hover:bg-[var(--stone)]/30 ${
+                        i < filtered.length - 1
+                          ? "border-b border-[var(--veloce-line)]"
+                          : ""
+                      }`}
                     >
-                      <td
-                        style={{
-                          padding: "13px 20px",
-                          fontSize: "12px",
-                          fontWeight: 500,
-                          color: "var(--text-primary)",
-                          fontFamily: "var(--font-mono)",
-                        }}
-                      >
+                      <td className="px-8 py-5 text-sm font-semibold tracking-wide text-[var(--ink)]">
                         ORD-{order.id}
                       </td>
-                      <td style={{ padding: "13px 20px" }}>
-                        <div
-                          style={{
-                            fontSize: "13px",
-                            fontWeight: 500,
-                            color: "var(--text-primary)",
-                          }}
-                        >
+                      <td className="px-8 py-5">
+                        <div className="text-sm font-semibold tracking-wide text-[var(--ink)]">
                           {order.shippingName}
                         </div>
-                        <div
-                          style={{
-                            fontSize: "11px",
-                            color: "var(--text-muted)",
-                            marginTop: "1px",
-                          }}
-                        >
+                        <div className="mt-1 text-[11px] font-medium tracking-wide text-[var(--ink-muted)]">
                           {order.shippingEmail}
                         </div>
                       </td>
-                      <td
-                        style={{
-                          padding: "13px 20px",
-                          fontSize: "13px",
-                          color: "var(--text-secondary)",
-                        }}
-                      >
+                      <td className="px-8 py-5 text-sm font-medium text-[var(--ink-muted)]">
                         {order.items?.length ?? 0} item
                         {order.items?.length !== 1 ? "s" : ""}
                       </td>
-                      <td
-                        style={{
-                          padding: "13px 20px",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "var(--text-primary)",
-                        }}
-                      >
+                      <td className="px-8 py-5 text-sm font-semibold tracking-wide text-[var(--ink)]">
                         {formatPrice(order.totalAmount)}
                       </td>
-                      <td
-                        style={{
-                          padding: "13px 20px",
-                          fontSize: "12px",
-                          color: "var(--text-muted)",
-                        }}
-                      >
-                        {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                      <td className="px-8 py-5 text-sm font-medium tracking-wide text-[var(--ink-muted)]">
+                        {new Date(order.createdAt).toLocaleDateString("en-US", {
                           day: "numeric",
                           month: "short",
                           year: "numeric",
                         })}
                       </td>
-                      <td style={{ padding: "13px 20px" }}>
+                      <td className="px-8 py-5">
                         {editingId === order.id ? (
                           <select
                             defaultValue={order.status}
@@ -276,16 +177,7 @@ export default function OrdersPage() {
                             }
                             onBlur={() => setEditing(null)}
                             autoFocus
-                            style={{
-                              fontSize: "12px",
-                              padding: "3px 8px",
-                              borderRadius: "6px",
-                              border: "1px solid var(--border)",
-                              background: "var(--bg-input)",
-                              color: "var(--text-primary)",
-                              fontFamily: "var(--font-main)",
-                              outline: "none",
-                            }}
+                            className="rounded-xl border border-[var(--veloce-border)] bg-[var(--stone)]/20 px-3 py-2 text-xs font-semibold tracking-wide text-[var(--ink)] outline-none transition-colors focus:border-[var(--oxblood)]"
                           >
                             {STATUSES.map((s) => (
                               <option key={s} value={s}>
@@ -297,13 +189,8 @@ export default function OrdersPage() {
                           <button
                             onClick={() => setEditing(order.id)}
                             title="Click to update status"
+                            className="inline-flex rounded-full px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase transition-opacity hover:opacity-80"
                             style={{
-                              fontSize: "11px",
-                              fontWeight: 500,
-                              padding: "3px 10px",
-                              borderRadius: "20px",
-                              border: "none",
-                              cursor: "pointer",
                               color: STATUS[order.status]?.color,
                               background: STATUS[order.status]?.bg,
                             }}

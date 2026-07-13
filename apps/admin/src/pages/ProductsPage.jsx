@@ -16,24 +16,6 @@ const emptyForm = {
   isNew: false,
 };
 
-const card = {
-  background: "var(--bg-card)",
-  border: "1px solid var(--border)",
-  borderRadius: "14px",
-  overflow: "hidden",
-};
-const inputStyle = {
-  width: "100%",
-  padding: "9px 12px",
-  borderRadius: "8px",
-  border: "1px solid var(--border)",
-  background: "var(--bg-input)",
-  color: "var(--text-primary)",
-  fontSize: "13px",
-  outline: "none",
-  fontFamily: "var(--font-main)",
-};
-
 const formatPrice = (value) => {
   const amount = Number(value ?? 0);
   return new Intl.NumberFormat("en-US", {
@@ -127,97 +109,55 @@ export default function ProductsPage() {
 
   const STATUS = (inStock) =>
     inStock
-      ? { color: "var(--success)", bg: "var(--success-bg)", label: "In Stock" }
+      ? { color: "var(--success)", bg: "var(--success-bg)", label: "IN STOCK" }
       : {
           color: "var(--danger)",
           bg: "var(--danger-bg)",
-          label: "Out of Stock",
+          label: "OUT OF STOCK",
         };
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
+    <div className="flex flex-col gap-8">
+      <div className="flex items-end justify-between">
         <div>
-          <h1
-            style={{
-              fontSize: "20px",
-              fontWeight: 600,
-              color: "var(--text-primary)",
-            }}
-          >
+          <div className="mb-2 text-[10px] font-semibold tracking-[0.2em] text-[var(--ink-muted)] uppercase">
+            Private Inventory
+          </div>
+          <h1 className="font-display text-3xl font-semibold tracking-wide text-[var(--ink)]">
             Products
           </h1>
-          <p
-            style={{
-              color: "var(--text-muted)",
-              fontSize: "13px",
-              marginTop: "2px",
-            }}
-          >
-            {cars.length} total vehicles
+          <p className="mt-2 text-sm text-[var(--ink-muted)]">
+            {cars.length} total vehicles in the collection.
           </p>
         </div>
         <button
           onClick={openAdd}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            padding: "9px 16px",
-            borderRadius: "9px",
-            background: "var(--accent)",
-            color: "var(--accent-fg)",
-            border: "none",
-            cursor: "pointer",
-            fontSize: "13px",
-            fontWeight: 500,
-            fontFamily: "var(--font-main)",
-          }}
+          className="luxury-btn flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold tracking-wide"
         >
-          <Plus size={14} /> Add Car
+          <Plus size={16} /> Add Car
         </button>
       </div>
 
       {isLoading && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "40px",
-            color: "var(--text-muted)",
-            fontSize: "13px",
-          }}
-        >
-          Loading...
+        <div className="py-12 text-center text-sm text-[var(--ink-muted)]">
+          Loading inventory...
         </div>
       )}
 
       {isError && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "40px",
-            color: "var(--danger)",
-            fontSize: "13px",
-          }}
-        >
-          Failed to load cars. Is the backend running?
+        <div className="py-12 text-center text-sm text-[var(--danger)]">
+          Failed to load inventory. Is the backend running?
         </div>
       )}
 
       {!isLoading && !isError && (
-        <div style={card}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div className="soft-card overflow-hidden bg-[var(--surface)] border-[var(--veloce-border)]">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                <tr className="border-b border-[var(--veloce-line)] bg-[var(--stone)]/20">
                   {[
                     "Name",
                     "Brand",
@@ -229,15 +169,7 @@ export default function ProductsPage() {
                   ].map((h) => (
                     <th
                       key={h}
-                      style={{
-                        textAlign: "left",
-                        padding: "10px 20px",
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        color: "var(--text-muted)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                      }}
+                      className="px-8 py-4 text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase"
                     >
                       {h}
                     </th>
@@ -250,108 +182,48 @@ export default function ProductsPage() {
                   return (
                     <tr
                       key={car.id}
-                      style={{
-                        borderBottom:
-                          i < cars.length - 1
-                            ? "1px solid var(--border)"
-                            : "none",
-                      }}
+                      className={`transition-colors hover:bg-[var(--stone)]/30 ${
+                        i < cars.length - 1
+                          ? "border-b border-[var(--veloce-line)]"
+                          : ""
+                      }`}
                     >
-                      <td
-                        style={{
-                          padding: "13px 20px",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "var(--text-primary)",
-                          maxWidth: "180px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
+                      <td className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap px-8 py-5 text-sm font-semibold tracking-wide text-[var(--ink)]">
                         {car.name}
                       </td>
-                      <td
-                        style={{
-                          padding: "13px 20px",
-                          fontSize: "13px",
-                          color: "var(--text-secondary)",
-                        }}
-                      >
+                      <td className="px-8 py-5 text-sm font-medium text-[var(--ink-muted)]">
                         {car.brand}
                       </td>
-                      <td
-                        style={{
-                          padding: "13px 20px",
-                          fontSize: "12px",
-                          color: "var(--text-secondary)",
-                          textTransform: "capitalize",
-                        }}
-                      >
-                        {car.category?.toLowerCase()}
+                      <td className="px-8 py-5 text-sm font-medium tracking-wide uppercase text-[var(--ink-muted)]">
+                        {car.category}
                       </td>
-                      <td
-                        style={{
-                          padding: "13px 20px",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                          color: "var(--text-primary)",
-                          fontFamily: "var(--font-mono)",
-                        }}
-                      >
+                      <td className="px-8 py-5 text-sm font-semibold tracking-wide text-[var(--ink)]">
                         {formatPrice(car.price)}
                       </td>
-                      <td
-                        style={{
-                          padding: "13px 20px",
-                          fontSize: "13px",
-                          color: "var(--text-secondary)",
-                          fontFamily: "var(--font-mono)",
-                        }}
-                      >
+                      <td className="px-8 py-5 text-sm font-medium text-[var(--ink-muted)]">
                         {car.stock}
                       </td>
-                      <td style={{ padding: "13px 20px" }}>
+                      <td className="px-8 py-5">
                         <span
-                          style={{
-                            fontSize: "11px",
-                            fontWeight: 500,
-                            padding: "3px 10px",
-                            borderRadius: "20px",
-                            color: s.color,
-                            background: s.bg,
-                          }}
+                          className="inline-flex rounded-full px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase"
+                          style={{ color: s.color, background: s.bg }}
                         >
                           {s.label}
                         </span>
                       </td>
-                      <td style={{ padding: "13px 20px" }}>
-                        <div style={{ display: "flex", gap: "4px" }}>
+                      <td className="px-8 py-5">
+                        <div className="flex gap-3">
                           <button
                             onClick={() => openEdit(car)}
-                            style={{
-                              padding: "5px",
-                              borderRadius: "6px",
-                              border: "none",
-                              background: "transparent",
-                              cursor: "pointer",
-                              color: "var(--text-muted)",
-                            }}
+                            className="rounded-lg p-2 text-[var(--ink-muted)] transition-colors hover:bg-[var(--stone)] hover:text-[var(--ink)]"
                           >
-                            <Pencil size={13} />
+                            <Pencil size={16} />
                           </button>
                           <button
                             onClick={() => setDeleteId(car.id)}
-                            style={{
-                              padding: "5px",
-                              borderRadius: "6px",
-                              border: "none",
-                              background: "transparent",
-                              cursor: "pointer",
-                              color: "var(--text-muted)",
-                            }}
+                            className="rounded-lg p-2 text-[var(--ink-muted)] transition-colors hover:bg-[var(--danger-bg)] hover:text-[var(--danger)]"
                           >
-                            <Trash2 size={13} />
+                            <Trash2 size={16} />
                           </button>
                         </div>
                       </td>
@@ -366,83 +238,28 @@ export default function ProductsPage() {
 
       {/* Add / Edit Modal */}
       {showModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            zIndex: 100,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "16px",
-          }}
-        >
-          <div
-            style={{
-              background: "var(--bg-card)",
-              borderRadius: "16px",
-              width: "100%",
-              maxWidth: "520px",
-              padding: "24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "14px",
-              maxHeight: "90vh",
-              overflowY: "auto",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: "15px",
-                  fontWeight: 600,
-                  color: "var(--text-primary)",
-                }}
-              >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--ink)]/40 p-4 backdrop-blur-sm">
+          <div className="flex max-h-[90vh] w-full max-w-[560px] flex-col gap-6 overflow-y-auto rounded-2xl border border-[var(--veloce-border)] bg-[var(--surface)] p-8 shadow-[var(--veloce-shadow)]">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-2xl font-semibold tracking-wide text-[var(--ink)]">
                 {editing ? "Edit Car" : "Add Car"}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                style={{
-                  border: "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  color: "var(--text-muted)",
-                }}
+                className="rounded-full p-2 text-[var(--ink-muted)] transition-colors hover:bg-[var(--stone)] hover:text-[var(--ink)]"
               >
-                <X size={16} />
+                <X size={20} />
               </button>
             </div>
 
             {formError && (
-              <div
-                style={{
-                  background: "var(--danger-bg)",
-                  color: "var(--danger)",
-                  fontSize: "13px",
-                  padding: "10px 14px",
-                  borderRadius: "9px",
-                }}
-              >
+              <div className="rounded-xl bg-[var(--danger-bg)] px-4 py-3 text-sm font-medium text-[var(--danger)]">
                 {formError}
               </div>
             )}
 
             {/* Two column grid for fields */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "12px",
-              }}
-            >
+            <div className="grid grid-cols-2 gap-5">
               {[
                 { label: "Car Name", key: "name", type: "text", col: 2 },
                 { label: "Brand", key: "brand", type: "text", col: 1 },
@@ -462,18 +279,11 @@ export default function ProductsPage() {
                 },
                 { label: "Image URL", key: "imageUrl", type: "text", col: 2 },
               ].map((f) => (
-                <div key={f.key} style={{ gridColumn: `span ${f.col}` }}>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: "11px",
-                      fontWeight: 600,
-                      color: "var(--text-muted)",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                      marginBottom: "5px",
-                    }}
-                  >
+                <div
+                  key={f.key}
+                  className={f.col === 2 ? "col-span-2" : "col-span-1"}
+                >
+                  <label className="mb-2 block text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
                     {f.label}
                   </label>
                   <input
@@ -482,24 +292,14 @@ export default function ProductsPage() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, [f.key]: e.target.value }))
                     }
-                    style={inputStyle}
+                    className="w-full rounded-xl border border-[var(--veloce-border)] bg-[var(--stone)]/20 px-4 py-3 text-sm font-medium text-[var(--ink)] outline-none transition-colors focus:border-[var(--oxblood)]"
                   />
                 </div>
               ))}
 
               {/* Category dropdown */}
-              <div>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "11px",
-                    fontWeight: 600,
-                    color: "var(--text-muted)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                    marginBottom: "5px",
-                  }}
-                >
+              <div className="col-span-1">
+                <label className="mb-2 block text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
                   Category
                 </label>
                 <select
@@ -507,7 +307,7 @@ export default function ProductsPage() {
                   onChange={(e) =>
                     setForm((p) => ({ ...p, category: e.target.value }))
                   }
-                  style={inputStyle}
+                  className="w-full rounded-xl border border-[var(--veloce-border)] bg-[var(--stone)]/20 px-4 py-3 text-sm font-medium text-[var(--ink)] outline-none transition-colors focus:border-[var(--oxblood)]"
                 >
                   {CATEGORIES.map((c) => (
                     <option key={c} value={c}>
@@ -518,14 +318,7 @@ export default function ProductsPage() {
               </div>
 
               {/* Is New toggle */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  paddingTop: "20px",
-                }}
-              >
+              <div className="col-span-1 flex items-center gap-3 pt-7">
                 <input
                   type="checkbox"
                   id="isNew"
@@ -533,17 +326,13 @@ export default function ProductsPage() {
                   onChange={(e) =>
                     setForm((p) => ({ ...p, isNew: e.target.checked }))
                   }
-                  style={{ width: "14px", height: "14px", cursor: "pointer" }}
+                  className="h-5 w-5 cursor-pointer accent-[var(--oxblood)]"
                 />
                 <label
                   htmlFor="isNew"
-                  style={{
-                    fontSize: "13px",
-                    color: "var(--text-secondary)",
-                    cursor: "pointer",
-                  }}
+                  className="cursor-pointer text-sm font-semibold tracking-wide text-[var(--ink-muted)]"
                 >
-                  Mark as New
+                  MARK AS NEW
                 </label>
               </div>
             </div>
@@ -553,62 +342,27 @@ export default function ProductsPage() {
               <img
                 src={form.imageUrl}
                 alt="preview"
-                style={{
-                  width: "100%",
-                  height: "140px",
-                  objectFit: "cover",
-                  borderRadius: "10px",
-                  border: "1px solid var(--border)",
-                }}
+                className="h-44 w-full rounded-xl border border-[var(--veloce-border)] object-cover shadow-sm"
                 onError={(e) => (e.target.style.display = "none")}
               />
             )}
 
-            <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
+            <div className="mt-4 flex gap-4">
               <button
                 onClick={() => setShowModal(false)}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  borderRadius: "9px",
-                  border: "1px solid var(--border)",
-                  background: "transparent",
-                  color: "var(--text-secondary)",
-                  cursor: "pointer",
-                  fontSize: "13px",
-                  fontFamily: "var(--font-main)",
-                }}
+                className="flex-1 rounded-xl border border-[var(--veloce-border)] bg-[var(--surface)] py-3.5 text-sm font-semibold tracking-wide text-[var(--ink-muted)] transition-colors hover:bg-[var(--stone)] hover:text-[var(--ink)]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  borderRadius: "9px",
-                  border: "none",
-                  background: "var(--accent)",
-                  color: "var(--accent-fg)",
-                  cursor: isSaving ? "not-allowed" : "pointer",
-                  fontSize: "13px",
-                  fontWeight: 500,
-                  fontFamily: "var(--font-main)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px",
-                  opacity: isSaving ? 0.7 : 1,
-                }}
+                className="luxury-btn flex flex-1 items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold tracking-wide disabled:opacity-70"
               >
                 {isSaving ? (
-                  <RefreshCw
-                    size={13}
-                    style={{ animation: "spin 1s linear infinite" }}
-                  />
+                  <RefreshCw size={18} className="animate-spin" />
                 ) : (
-                  <Check size={14} />
+                  <Check size={18} />
                 )}
                 {editing ? "Save Changes" : "Add Car"}
               </button>
@@ -619,74 +373,25 @@ export default function ProductsPage() {
 
       {/* Delete confirm */}
       {deleteId && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            zIndex: 100,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "16px",
-          }}
-        >
-          <div
-            style={{
-              background: "var(--bg-card)",
-              borderRadius: "16px",
-              width: "100%",
-              maxWidth: "360px",
-              padding: "24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-            }}
-          >
-            <h2
-              style={{
-                fontSize: "15px",
-                fontWeight: 600,
-                color: "var(--text-primary)",
-              }}
-            >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--ink)]/40 p-4 backdrop-blur-sm">
+          <div className="flex w-full max-w-[400px] flex-col gap-4 rounded-2xl border border-[var(--veloce-border)] bg-[var(--surface)] p-8 shadow-[var(--veloce-shadow)]">
+            <h2 className="font-display text-2xl font-semibold text-[var(--ink)]">
               Delete car?
             </h2>
-            <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-              This cannot be undone.
+            <p className="text-sm text-[var(--ink-muted)]">
+              This action cannot be undone. Are you sure you want to remove this vehicle from the collection?
             </p>
-            <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
+            <div className="mt-4 flex gap-4">
               <button
                 onClick={() => setDeleteId(null)}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  borderRadius: "9px",
-                  border: "1px solid var(--border)",
-                  background: "transparent",
-                  color: "var(--text-secondary)",
-                  cursor: "pointer",
-                  fontSize: "13px",
-                  fontFamily: "var(--font-main)",
-                }}
+                className="flex-1 rounded-xl border border-[var(--veloce-border)] py-3 text-sm font-semibold tracking-wide text-[var(--ink-muted)] transition-colors hover:bg-[var(--stone)] hover:text-[var(--ink)]"
               >
                 Cancel
               </button>
               <button
                 onClick={() => deleteMutation.mutate(deleteId)}
                 disabled={deleteMutation.isPending}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  borderRadius: "9px",
-                  border: "none",
-                  background: "var(--danger-bg)",
-                  color: "var(--danger)",
-                  cursor: "pointer",
-                  fontSize: "13px",
-                  fontWeight: 500,
-                  fontFamily: "var(--font-main)",
-                }}
+                className="flex-1 rounded-xl bg-[var(--danger)] py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-[var(--danger)]/80 disabled:opacity-70"
               >
                 {deleteMutation.isPending ? "Deleting..." : "Delete"}
               </button>
