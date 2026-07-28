@@ -121,8 +121,13 @@ export default function CheckoutPage() {
 
     try {
       setIsSubmitting(true);
-      await orderService.create(payload);
+      const { data: order } = await orderService.create(payload);
       clearCart();
+      if (import.meta.env.VITE_STRIPE_ENABLED === "true") {
+        const { data } = await orderService.createCheckoutSession(order.id);
+        window.location.assign(data.checkoutUrl);
+        return;
+      }
       navigate("/orders", { replace: true });
     } catch (err) {
       setError(
@@ -198,8 +203,9 @@ export default function CheckoutPage() {
                   Reservation Process
                 </h2>
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--ink-muted)]">
-                  No payment is collected at this stage. Availability, delivery, and
-                  handoff details are confirmed after submission.
+                  {import.meta.env.VITE_STRIPE_ENABLED === "true"
+                    ? "After confirmation, you will continue to Stripe's secure hosted checkout."
+                    : "Availability, delivery, and handoff details are confirmed after submission."}
                 </p>
               </div>
             </section>
