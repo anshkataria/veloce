@@ -1,177 +1,97 @@
 # VELOCE
 
-A full-stack premium car commerce project.
+A full-stack automotive commerce platform with a customer storefront, an operations dashboard, and a Spring Boot API. VELOCE demonstrates transactional order processing, role-based access, third-party payments, asynchronous notifications, caching, realtime operations updates, and automated delivery checks.
 
-VELOCE is not a basic generic store. It is a luxury-focused platform with:
-
-- a customer storefront,
-- an admin dashboard,
-- and a secure backend API.
-
-The project shows real-world skills like authentication, protected admin routes, API integration, state management, and custom branding.
-
-## Live Project Idea
-
-**Storefront:** users browse cars, view details, add to cart, and place orders.  
-**Admin:** admin can manage products, track orders, and monitor business stats.
-
-## Main Features
-
-### Storefront
-
-- Home page with featured cars from API
-- Category browsing (Supercars, Sportscars, Luxury cars)
-- Product listing with filters and sorting
-- Product detail page with related cars
-- Cart and checkout flow
-- Login/Register with backend authentication
-- Order history page for users
-
-### Admin Dashboard
-
-- Secure admin login
-- Dashboard cards and revenue chart
-- Recent orders table
-- Product management (create, update, delete)
-- Order status management
-- Light/Dark mode
-
-### Backend API
-
-- Spring Boot REST API
-- JWT authentication
-- Role-based security rules
-- PostgreSQL database
-- Seeded data (admin + sample cars)
-
-## Tech Stack
-
-### Frontend
-
-- React + Vite
-- React Router
-- TanStack Query
-- Zustand
-- Axios
-- Tailwind CSS + custom CSS variables
-
-### Backend
-
-- Java 21
-- Spring Boot
-- Spring Security
-- Spring Data JPA
-- PostgreSQL
-- JWT
-
-## Project Structure
+## Architecture
 
 ```text
-veloce/
-  apps/
-    storefront/   # Customer app (React + Vite)
-    admin/        # Admin app (React + Vite)
-  backend/
-    api/          # Spring Boot API
+React storefront (5173) ----+
+                            +--> Spring Boot API (8080) --> PostgreSQL
+React admin (5174) ---------+             |              --> Redis cache
+                                          +--------------> Stripe Checkout
+                                          +--------------> SMTP / Mailpit
 ```
 
-## Getting Started
+## Engineering Highlights
 
-## 1) Clone and open
+- JWT authentication with server-enforced `CUSTOMER` and `ADMIN` authorization
+- Server-side totals and pessimistic inventory locking to prevent overselling
+- Stripe-hosted Checkout sessions with signed webhook payment confirmation
+- Redis-backed catalog caching with cache eviction on inventory changes
+- Server-Sent Events that refresh the admin order queue in realtime
+- Asynchronous welcome and order-confirmation emails
+- OpenAPI/Swagger documentation and Actuator health probes
+- JUnit 5/Mockito, Vitest/React Testing Library, and Playwright coverage
+- GitHub Actions quality gates for linting, tests, builds, and E2E tests
+- Multi-stage Docker images and one-command Compose environment
 
-```bash
-git clone <your-repo-url>
-cd veloce
-```
+## Stack
 
-## 2) Backend setup (PostgreSQL + API)
+| Area | Technology |
+| --- | --- |
+| Storefront and admin | React 19, Vite, React Router, TanStack Query, Zustand, Tailwind CSS |
+| Backend | Java 21, Spring Boot 4, Spring Security, Spring Data JPA |
+| Data | PostgreSQL 16, Redis 7 |
+| Integrations | Stripe Checkout, SMTP/Mailpit, SSE, OpenAPI |
+| Quality | JUnit, Mockito, Vitest, React Testing Library, Playwright, GitHub Actions |
 
-Create a PostgreSQL database and user that match:
+## Run Locally
 
-- DB: `veloce_db`
-- User: `veloce_user`
-- Password: `veloce123`
-
-These values are in `backend/api/src/main/resources/application.yml`.
-
-Run backend:
-
-```bash
-cd backend/api
-./mvnw spring-boot:run
-```
-
-Backend runs on: `http://localhost:8080`
-
-## 3) Run Storefront
+Docker Compose is the supported full-stack path:
 
 ```bash
-cd apps/storefront
-npm install
-npm run dev
-```
-
-Storefront runs on Vite default port (usually `http://localhost:5173`).
-
-## 4) Run Admin
-
-Open another terminal:
-
-```bash
-cd apps/admin
-npm install
-npm run dev
-```
-
-Admin runs on another Vite port (usually `http://localhost:5174`).
-
-## Docker (Run Everything)
-
-You can run the full stack (PostgreSQL + Spring Boot API + Storefront + Admin) with Docker Compose.
-
-From the project root:
-
-```bash
+cp .env.example .env
 docker compose up --build
 ```
 
-Services:
+- Storefront: http://localhost:5173
+- Admin: http://localhost:5174
+- API: http://localhost:8080
+- Swagger UI: http://localhost:8080/swagger-ui.html
+- Mailpit inbox: http://localhost:8025
+- Health: http://localhost:8080/actuator/health
 
-- Storefront: `http://localhost:5173`
-- Admin: `http://localhost:5174`
-- Backend API: `http://localhost:8080`
-- PostgreSQL: `localhost:5432`
+The seeded local admin is `admin@veloce.in` / `admin123`. These credentials are development-only and must be replaced before deployment.
 
-Run in detached mode:
+## Optional Integrations
 
-```bash
-docker compose up -d --build
-```
+Email is captured locally by Mailpit. Set `MAIL_ENABLED=true` to deliver registration and order messages to it.
 
-Stop everything:
-
-```bash
-docker compose down
-```
-
-Stop and remove database volume too:
+For Stripe sandbox checkout, add `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`, set `VITE_STRIPE_ENABLED=true`, then forward sandbox events:
 
 ```bash
-docker compose down -v
+stripe listen --forward-to localhost:8080/api/v1/payments/webhook
 ```
 
-## Demo Credentials
+Without Stripe credentials, checkout remains a working reservation flow and records a pending order.
 
-### Admin
+## Quality Commands
 
-- Email: `admin@veloce.in`
-- Password: `admin123`
+```bash
+# storefront
+cd apps/storefront && npm ci && npm run lint && npm test && npm run build
+npm run test:e2e
 
-Admin user is seeded by backend in:
-`backend/api/src/main/java/com/veloce/api/config/DataSeeder.java`
+# admin
+cd apps/admin && npm ci && npm run lint && npm test && npm run build
 
-## Future Improvements
+# backend
+cd backend/api && ./mvnw verify
+```
 
-- Add payment gateway integration
+## Security Notes
 
----
+- Prices and roles are never trusted from clients.
+- Admin inventory and order endpoints are protected by backend RBAC.
+- Stripe webhook signatures are verified before payment state changes.
+- Secrets and allowed origins are environment-configured.
+- Local JWT and database defaults exist only for developer convenience; use generated secrets and managed credentials in deployment.
+
+## Repository Layout
+
+```text
+apps/storefront/  Customer application
+apps/admin/       Operations application
+backend/api/      Spring Boot REST API
+.github/workflows Continuous integration
+```
