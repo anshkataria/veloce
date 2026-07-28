@@ -9,6 +9,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 
@@ -18,6 +20,7 @@ public class CarService {
 
     private final CarRepository carRepository;
 
+    @Cacheable(value = "cars", key = "#category + ':' + #search + ':' + #page + ':' + #size + ':' + #sortBy")
     public Page<Car> getCars(String category, String search,
                              int page, int size, String sortBy) {
         Sort sort = switch (sortBy) {
@@ -57,6 +60,7 @@ public class CarService {
         }
     }
 
+    @Cacheable(value = "car", key = "#id")
     public Car getCarById(Long id) {
         return carRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Car not found"));
@@ -67,6 +71,7 @@ public class CarService {
         return carRepository.findTop4ByCategoryAndIdNot(car.getCategory(), id);
     }
 
+    @CacheEvict(value = {"cars", "car"}, allEntries = true)
     public Car createCar(CarRequest request) {
         Car car = Car.builder()
                 .name(request.getName())
@@ -84,6 +89,7 @@ public class CarService {
         return carRepository.save(car);
     }
 
+    @CacheEvict(value = {"cars", "car"}, allEntries = true)
     public Car updateCar(Long id, CarRequest request) {
         Car car = getCarById(id);
         car.setName(request.getName());
@@ -100,6 +106,7 @@ public class CarService {
         return carRepository.save(car);
     }
 
+    @CacheEvict(value = {"cars", "car"}, allEntries = true)
     public void deleteCar(Long id) {
         if (!carRepository.existsById(id)) {
             throw new RuntimeException("Car not found");

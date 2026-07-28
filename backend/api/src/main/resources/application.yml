@@ -3,21 +3,57 @@ spring:
     name: veloce-api
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/veloce_db
-    username: veloce_user
-    password: veloce123
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/veloce_db}
+    username: ${SPRING_DATASOURCE_USERNAME:veloce_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:veloce123}
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      connect-timeout: 2s
+      repositories:
+        enabled: false
+  cache:
+    type: ${CACHE_TYPE:simple}
+    redis:
+      time-to-live: 10m
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties.mail.smtp.auth: ${MAIL_SMTP_AUTH:false}
+    properties.mail.smtp.starttls.enable: ${MAIL_STARTTLS:false}
 
 server:
   port: 8080
 
 jwt:
-  secret: veloce-super-secret-jwt-key-change-this-in-production-min-32-chars
-  expiration: 86400000
+  secret: ${JWT_SECRET:local-development-secret-change-before-production-123456}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+app:
+  cors-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:5174}
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from: ${MAIL_FROM:orders@veloce.example}
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+    success-url: ${STRIPE_SUCCESS_URL:http://localhost:5173/orders?payment=success}
+    cancel-url: ${STRIPE_CANCEL_URL:http://localhost:5173/checkout?payment=cancelled}
+
+management:
+  endpoints.web.exposure.include: health,info
+  endpoint.health.probes.enabled: true
+
+springdoc:
+  swagger-ui.path: /swagger-ui.html
