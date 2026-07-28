@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import com.veloce.api.service.OrderEventService;
+import com.veloce.api.service.PaymentService;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +21,8 @@ import java.util.Map;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderEventService orderEventService;
+    private final PaymentService paymentService;
 
     // customer places an order
     @PostMapping
@@ -46,5 +51,17 @@ public class OrderController {
             @PathVariable Long id,
             @RequestBody Map<String, String> body) {
         return ResponseEntity.ok(orderService.updateOrderStatus(id, body.get("status")));
+    }
+
+    @PostMapping("/{id}/checkout-session")
+    public ResponseEntity<Map<String, String>> createCheckoutSession(
+            @PathVariable Long id, @AuthenticationPrincipal String userEmail) {
+        Order order = orderService.getOwnedOrder(id, userEmail);
+        return ResponseEntity.ok(Map.of("checkoutUrl", paymentService.createCheckoutSession(order)));
+    }
+
+    @GetMapping(value = "/events", produces = "text/event-stream")
+    public SseEmitter events() {
+        return orderEventService.subscribe();
     }
 }
