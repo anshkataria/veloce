@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { createElement, useState } from "react";
+import useAuthStore from "../store/authStore";
 import {
   LayoutDashboard,
   Package,
@@ -20,6 +21,12 @@ const navItems = [
 export default function AdminLayout() {
   const [mobileOpen, setMobile] = useState(false);
   const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <div className="flex min-h-screen bg-[var(--canvas)] text-[var(--ink)] font-body selection:bg-[var(--brass)] selection:text-[var(--ink)]">
@@ -84,7 +91,7 @@ export default function AdminLayout() {
         {/* Bottom */}
         <div className="flex flex-col gap-1 border-t border-[var(--veloce-border)] p-4">
           <button
-            onClick={() => navigate("/login")}
+            onClick={handleLogout}
             className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[13px] text-[var(--ink-muted)] transition-all duration-[240ms] ease-[var(--ease-premium)] hover:bg-[var(--stone)]/50 hover:text-[var(--ink)]"
           >
             <LogOut size={16} className="transition-transform group-hover:-translate-x-0.5" />
@@ -107,6 +114,7 @@ export default function AdminLayout() {
         <header className="sticky top-0 z-30 flex h-[76px] items-center gap-4 glass-nav px-8">
           <button
             onClick={() => setMobile(true)}
+            aria-label="Open navigation"
             className="lg:hidden text-[var(--ink-muted)] hover:text-[var(--ink)] transition-colors"
           >
             <Menu size={22} />
@@ -119,7 +127,7 @@ export default function AdminLayout() {
               </span>
             </div>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--oxblood)] text-xs font-semibold tracking-widest text-[var(--surface)] shadow-md transition-transform hover:scale-105 cursor-pointer">
+          <div aria-label="Admin profile" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--oxblood)] text-xs font-semibold tracking-widest text-[var(--surface)] shadow-md">
             A
           </div>
         </header>

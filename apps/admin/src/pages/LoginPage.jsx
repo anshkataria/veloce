@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LockKeyhole, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { authService } from "../services/authService";
 import useAuthStore from "../store/authStore";
 
@@ -80,11 +80,12 @@ export default function LoginPage() {
               )}
 
               <div>
-                <label className="mb-2 block text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
+                <label htmlFor="admin-email" className="mb-2 block text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
                   Email
                 </label>
                 <input
                   type="email"
+                  id="admin-email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   className="auth-input w-full rounded-xl border border-[var(--veloce-border)] bg-transparent px-4 text-sm text-[var(--ink)] transition-colors focus:border-[var(--oxblood)] focus:outline-none"
@@ -93,11 +94,12 @@ export default function LoginPage() {
               </div>
               
               <div>
-                <label className="mb-2 block text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
+                <label htmlFor="admin-password" className="mb-2 block text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
                   Password
                 </label>
                 <input
                   type="password"
+                  id="admin-password"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   className="auth-input w-full rounded-xl border border-[var(--veloce-border)] bg-transparent px-4 text-sm text-[var(--ink)] transition-colors focus:border-[var(--oxblood)] focus:outline-none"

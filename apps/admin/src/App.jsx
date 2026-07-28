@@ -1,9 +1,10 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import AdminLayout from "./layouts/AdminLayout";
-import DashboardPage from "./pages/DashboardPage";
-import ProductsPage from "./pages/ProductsPage";
-import OrdersPage from "./pages/OrdersPage";
-import LoginPage from "./pages/LoginPage";
+const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const ProductsPage = lazy(() => import("./pages/ProductsPage"));
+const OrdersPage = lazy(() => import("./pages/OrdersPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("veloce_admin_token");
@@ -13,7 +14,7 @@ function ProtectedRoute({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <Suspense fallback={<div className="grid min-h-screen place-items-center text-sm">Loading...</div>}><Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route
           element={
@@ -27,7 +28,7 @@ export default function App() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/orders" element={<OrdersPage />} />
         </Route>
-      </Routes>
+      </Routes></Suspense>
     </BrowserRouter>
   );
 }

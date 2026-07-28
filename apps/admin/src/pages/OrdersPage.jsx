@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { orderService } from "../services/orderService";
 
@@ -23,6 +23,34 @@ export default function OrdersPage() {
   const [filter, setFilter] = useState("all");
   const [editingId, setEditing] = useState(null);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    const token = localStorage.getItem("veloce_admin_token");
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1";
+    const connect = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/orders/events`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: "text/event-stream" },
+          signal: controller.signal,
+        });
+        if (!response.ok || !response.body) return;
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        while (!controller.signal.aborted) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          if (decoder.decode(value).includes("event:order-updated")) {
+            queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+          }
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") console.warn("Order event stream disconnected");
+      }
+    };
+    connect();
+    return () => controller.abort();
+  }, [queryClient]);
+
   const {
     data: orders = [],
     isLoading,
@@ -30,13 +58,13 @@ export default function OrdersPage() {
   } = useQuery({
     queryKey: ["admin-orders"],
     queryFn: () => orderService.getAll().then((r) => r.data),
-    refetchInterval: 30000, // auto refresh every 30s
+    refetchInterval: 60000,
   });
 
   const statusMutation = useMutation({
     mutationFn: ({ id, status }) => orderService.updateStatus(id, status),
     onSuccess: () => {
-      queryClient.invalidateQueries(["admin-orders"]);
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
       setEditing(null);
     },
   });
