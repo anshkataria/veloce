@@ -12,6 +12,14 @@ React admin (5174) ---------+             |              --> Redis cache
                                           +--------------> SMTP / Mailpit
 ```
 
+## Screenshots
+
+| Storefront | Admin |
+| --- | --- |
+| ![Storefront home](docs/screenshots/storefront-home.png) | ![Admin dashboard](docs/screenshots/admin-dashboard.png) |
+| ![Storefront product detail](docs/screenshots/storefront-product-detail.png) | ![Admin products](docs/screenshots/admin-products.png) |
+| ![Storefront checkout](docs/screenshots/storefront-checkout.png) | — |
+
 ## Engineering Highlights
 
 - JWT authentication with server-enforced `CUSTOMER` and `ADMIN` authorization
@@ -21,7 +29,8 @@ React admin (5174) ---------+             |              --> Redis cache
 - Server-Sent Events that refresh the admin order queue in realtime
 - Asynchronous welcome and order-confirmation emails
 - OpenAPI/Swagger documentation and Actuator health probes
-- JUnit 5/Mockito, Vitest/React Testing Library, and Playwright coverage
+- npm workspaces monorepo with a shared `@veloce/ui` design-token and component package consumed by both frontends
+- JUnit 5/Mockito, Testcontainers (Postgres) integration tests, Vitest/React Testing Library, and Playwright coverage
 - GitHub Actions quality gates for linting, tests, builds, and E2E tests
 - Multi-stage Docker images and one-command Compose environment
 
@@ -67,17 +76,37 @@ Without Stripe credentials, checkout remains a working reservation flow and reco
 
 ## Quality Commands
 
+Frontend installs are managed as npm workspaces from the repository root — run `npm ci` once at the root, then target either app with `--workspace`:
+
 ```bash
+# install once for both apps + the shared @veloce/ui package
+npm ci
+
 # storefront
-cd apps/storefront && npm ci && npm run lint && npm test && npm run build
-npm run test:e2e
+npm run lint --workspace=apps/storefront
+npm test --workspace=apps/storefront
+npm run build --workspace=apps/storefront
+npm run test:e2e --workspace=apps/storefront
 
 # admin
-cd apps/admin && npm ci && npm run lint && npm test && npm run build
+npm run lint --workspace=apps/admin
+npm test --workspace=apps/admin
+npm run build --workspace=apps/admin
 
-# backend
+# backend (the Testcontainers integration test needs Docker running)
 cd backend/api && ./mvnw verify
 ```
+
+### Regenerating Screenshots
+
+The gallery above is captured with Playwright against a running Docker Compose stack:
+
+```bash
+docker compose up --build -d
+npm run screenshots --workspace=apps/storefront
+```
+
+This writes PNGs to `docs/screenshots/`. It's tagged `@screenshots` and excluded from the regular `test:e2e` / CI run.
 
 ## Security Notes
 
@@ -92,6 +121,7 @@ cd backend/api && ./mvnw verify
 ```text
 apps/storefront/  Customer application
 apps/admin/       Operations application
+packages/ui/      Shared design tokens, components, and utils (@veloce/ui)
 backend/api/      Spring Boot REST API
 .github/workflows Continuous integration
 ```
