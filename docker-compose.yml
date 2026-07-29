@@ -71,8 +71,8 @@ services:
 
   storefront:
     build:
-      context: ./apps/storefront
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/storefront/Dockerfile
     container_name: veloce-storefront
     depends_on:
       - backend
@@ -81,8 +81,8 @@ services:
 
   admin:
     build:
-      context: ./apps/admin
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/admin/Dockerfile
     container_name: veloce-admin
     depends_on:
       - backend
