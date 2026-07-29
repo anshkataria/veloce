@@ -9,10 +9,12 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --grep-invert @screenshots",
+    "screenshots": "playwright test --grep @screenshots",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@veloce/ui": "*",
     "@tanstack/react-query": "^5.96.1",
     "axios": "^1.14.0",
     "framer-motion": "^12.42.2",

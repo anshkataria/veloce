@@ -1,0 +1,48 @@
+:root {
+  --font-display: "Bodoni Moda", serif;
+  --font-body: "Sora", sans-serif;
+  --veloce-canvas: #f3efe7;
+  --veloce-surface: #f8f5ef;
+  --veloce-ink: #1b1714;
+  --veloce-espresso: #211a16;
+  --veloce-muted: #746b62;
+  --veloce-oxblood: #762632;
+  --veloce-oxblood-deep: #581b24;
+  --veloce-champagne: #b59a72;
+  --veloce-line: rgba(79, 61, 45, 0.16);
+  --canvas: var(--veloce-canvas);
+  --surface: var(--veloce-surface);
+  --ink: var(--veloce-ink);
+  --ink-muted: var(--veloce-muted);
+  --oxblood: var(--veloce-oxblood);
+  --brass: var(--veloce-champagne);
+  --dark-surface: var(--veloce-espresso);
+  --stone: #e5dccf;
+  --brass-line: var(--veloce-line);
+  --brass-line-strong: rgba(79, 61, 45, 0.24);
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --page-max-width: 1480px;
+  --page-gutter: clamp(1rem, 3vw, 3rem);
+  --header-height: 3.5rem;
+  --section-space-large: clamp(4.5rem, 8vw, 8rem);
+  --section-space-medium: clamp(3.5rem, 6vw, 5.5rem);
+  --content-gap: clamp(1.25rem, 2vw, 2rem);
+  --veloce-bg: var(--veloce-canvas);
+  --veloce-accent: var(--veloce-champagne);
+  --veloce-accent-2: var(--veloce-oxblood);
+  --veloce-umber: var(--stone);
+  --veloce-sienna: var(--veloce-oxblood-deep);
+  --veloce-panel: var(--veloce-surface);
+  --veloce-border: var(--veloce-line);
+  --veloce-shadow: 0 18px 50px rgba(33, 26, 22, 0.1);
+
+  /* Semantic status colors, shared by order/stock status badges in both apps */
+  --success: #2f7a46;
+  --success-bg: rgba(47, 122, 70, 0.14);
+  --warning: #8a5a00;
+  --warning-bg: rgba(138, 90, 0, 0.14);
+  --danger: #9b2626;
+  --danger-bg: rgba(155, 38, 38, 0.12);
+  --info: #1a4b8a;
+  --info-bg: rgba(26, 75, 138, 0.12);
+}
