@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import useAuthStore from "./store/authStore";
 const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
@@ -7,7 +8,7 @@ const OrdersPage = lazy(() => import("./pages/OrdersPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 
 function ProtectedRoute({ children }) {
-  const token = localStorage.getItem("veloce_admin_token");
+  const token = useAuthStore((s) => s.token);
   return token ? children : <Navigate to="/login" replace />;
 }
 

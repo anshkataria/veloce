@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2, X, Check, RefreshCw } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { carService } from "../services/carService";
+import { formatPrice, StatusBadge, Pagination, stockStatusMeta } from "@veloce/ui";
 
 const CATEGORIES = ["SUPERCARS", "SPORTSCARS", "LUXURY"];
 const emptyForm = {
@@ -16,17 +17,11 @@ const emptyForm = {
   isNew: false,
 };
 
-const formatPrice = (value) => {
-  const amount = Number(value ?? 0);
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
+const PAGE_SIZE = 20;
 
 export default function ProductsPage() {
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -34,16 +29,21 @@ export default function ProductsPage() {
   const [formError, setFormError] = useState("");
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["admin-cars"],
-    queryFn: () => carService.getAll({ size: 100 }).then((r) => r.data.content),
+    queryKey: ["admin-cars", page],
+    queryFn: () => carService.getAll({ page, size: PAGE_SIZE }).then((r) => r.data),
   });
 
-  const cars = data ?? [];
+  const cars = data?.content ?? [];
+  const totalElements = data?.totalElements ?? 0;
+  const totalPages = data?.totalPages ?? 0;
+
+  const invalidateCars = () =>
+    queryClient.invalidateQueries({ queryKey: ["admin-cars"] });
 
   const createMutation = useMutation({
     mutationFn: (data) => carService.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries(["admin-cars"]);
+      invalidateCars();
       setShowModal(false);
     },
     onError: (err) =>
@@ -53,7 +53,7 @@ export default function ProductsPage() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => carService.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(["admin-cars"]);
+      invalidateCars();
       setShowModal(false);
     },
     onError: (err) =>
@@ -63,7 +63,7 @@ export default function ProductsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id) => carService.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(["admin-cars"]);
+      invalidateCars();
       setDeleteId(null);
     },
   });
@@ -107,15 +107,6 @@ export default function ProductsPage() {
     else createMutation.mutate(payload);
   };
 
-  const STATUS = (inStock) =>
-    inStock
-      ? { color: "var(--success)", bg: "var(--success-bg)", label: "IN STOCK" }
-      : {
-          color: "var(--danger)",
-          bg: "var(--danger-bg)",
-          label: "OUT OF STOCK",
-        };
-
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
@@ -129,7 +120,7 @@ export default function ProductsPage() {
             Products
           </h1>
           <p className="mt-2 text-sm text-[var(--ink-muted)]">
-            {cars.length} total vehicles in the collection.
+            {totalElements} total vehicles in the collection.
           </p>
         </div>
         <button
@@ -178,7 +169,7 @@ export default function ProductsPage() {
               </thead>
               <tbody>
                 {cars.map((car, i) => {
-                  const s = STATUS(car.inStock);
+                  const s = stockStatusMeta(car.inStock);
                   return (
                     <tr
                       key={car.id}
@@ -204,23 +195,20 @@ export default function ProductsPage() {
                         {car.stock}
                       </td>
                       <td className="px-8 py-5">
-                        <span
-                          className="inline-flex rounded-full px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase"
-                          style={{ color: s.color, background: s.bg }}
-                        >
-                          {s.label}
-                        </span>
+                        <StatusBadge meta={s} />
                       </td>
                       <td className="px-8 py-5">
                         <div className="flex gap-3">
                           <button
                             onClick={() => openEdit(car)}
+                            aria-label={`Edit ${car.name}`}
                             className="rounded-lg p-2 text-[var(--ink-muted)] transition-colors hover:bg-[var(--stone)] hover:text-[var(--ink)]"
                           >
                             <Pencil size={16} />
                           </button>
                           <button
                             onClick={() => setDeleteId(car.id)}
+                            aria-label={`Delete ${car.name}`}
                             className="rounded-lg p-2 text-[var(--ink-muted)] transition-colors hover:bg-[var(--danger-bg)] hover:text-[var(--danger)]"
                           >
                             <Trash2 size={16} />
@@ -232,6 +220,15 @@ export default function ProductsPage() {
                 })}
               </tbody>
             </table>
+          </div>
+          <div className="border-t border-[var(--veloce-line)]">
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              totalElements={totalElements}
+              pageSize={PAGE_SIZE}
+              onPageChange={setPage}
+            />
           </div>
         </div>
       )}
@@ -283,10 +280,11 @@ export default function ProductsPage() {
                   key={f.key}
                   className={f.col === 2 ? "col-span-2" : "col-span-1"}
                 >
-                  <label className="mb-2 block text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
+                  <label htmlFor={f.key} className="mb-2 block text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
                     {f.label}
                   </label>
                   <input
+                    id={f.key}
                     type={f.type}
                     value={form[f.key]}
                     onChange={(e) =>
@@ -299,10 +297,11 @@ export default function ProductsPage() {
 
               {/* Category dropdown */}
               <div className="col-span-1">
-                <label className="mb-2 block text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
+                <label htmlFor="category" className="mb-2 block text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
                   Category
                 </label>
                 <select
+                  id="category"
                   value={form.category}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, category: e.target.value }))

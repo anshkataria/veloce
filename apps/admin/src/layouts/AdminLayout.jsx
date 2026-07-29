@@ -1,6 +1,7 @@
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { createElement, useState } from "react";
 import useAuthStore from "../store/authStore";
+import { Breadcrumbs, UserMenu } from "@veloce/ui";
 import {
   LayoutDashboard,
   Package,
@@ -21,12 +22,20 @@ const navItems = [
 export default function AdminLayout() {
   const [mobileOpen, setMobile] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
   };
+
+  const activeNavItem = navItems.find((item) => location.pathname.startsWith(item.to));
+  const breadcrumbItems = [
+    { label: "Operations", to: "/dashboard" },
+    ...(activeNavItem ? [{ label: activeNavItem.label }] : []),
+  ];
 
   return (
     <div className="flex min-h-screen bg-[var(--canvas)] text-[var(--ink)] font-body selection:bg-[var(--brass)] selection:text-[var(--ink)]">
@@ -120,16 +129,15 @@ export default function AdminLayout() {
             <Menu size={22} />
           </button>
           <div className="flex-1">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--brass-line)] bg-[var(--surface)] px-3 py-1.5 shadow-sm">
-              <Sparkles size={14} className="text-[var(--brass)]" />
-              <span className="text-[11px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
-                Atelier Control Room
-              </span>
-            </div>
+            <Breadcrumbs items={breadcrumbItems} />
           </div>
-          <div aria-label="Admin profile" className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--oxblood)] text-xs font-semibold tracking-widest text-[var(--surface)] shadow-md">
-            A
+          <div className="hidden items-center gap-2 rounded-full border border-[var(--brass-line)] bg-[var(--surface)] px-3 py-1.5 shadow-sm sm:inline-flex">
+            <Sparkles size={14} className="text-[var(--brass)]" />
+            <span className="text-[11px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
+              Atelier Control Room
+            </span>
           </div>
+          <UserMenu name={user?.name} email={user?.email} onLogout={handleLogout} />
         </header>
 
         {/* Content */}
