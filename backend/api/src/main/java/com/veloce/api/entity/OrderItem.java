@@ -1,5 +1,6 @@
 package com.veloce.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,8 +18,12 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Back-reference to the owning Order. Never serialized: Order -> items ->
+    // item.order -> Order would otherwise be a circular reference that blows
+    // up JSON serialization on every order response.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
+    @JsonIgnore
     private Order order;
 
     @ManyToOne(fetch = FetchType.EAGER)
