@@ -86,6 +86,15 @@ export default function ProductDetailPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [added, setAdded] = useState(false);
+  const [brokenImages, setBrokenImages] = useState(() => new Set());
+
+  const markImageBroken = (src) =>
+    setBrokenImages((current) => {
+      if (current.has(src)) return current;
+      const next = new Set(current);
+      next.add(src);
+      return next;
+    });
 
   const {
     data: car,
@@ -241,28 +250,36 @@ export default function ProductDetailPage() {
               className="group block w-full overflow-hidden bg-[var(--stone)] text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--oxblood)]"
               aria-label={`Expand image of ${car.name}`}
             >
-              <AnimatePresence mode="wait">
-                <MotionImg
-                  key={selectedImage?.src}
-                  src={selectedImage?.src}
-                  alt={car.name}
-                  className="aspect-[16/10] w-full object-cover transition-transform duration-[620ms] ease-[var(--ease-premium)] group-hover:scale-[1.025] group-active:scale-[1.01]"
-                  style={{
-                    objectPosition:
-                      selectedImage?.objectPosition ?? getVehicleObjectPosition(car.name),
-                  }}
-                  initial={{ opacity: 0, scale: 1.03 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.015 }}
-                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                />
-              </AnimatePresence>
+              {selectedImage?.src && !brokenImages.has(selectedImage.src) ? (
+                <AnimatePresence mode="wait">
+                  <MotionImg
+                    key={selectedImage.src}
+                    src={selectedImage.src}
+                    alt={car.name}
+                    className="aspect-[16/10] w-full object-cover transition-transform duration-[620ms] ease-[var(--ease-premium)] group-hover:scale-[1.025] group-active:scale-[1.01]"
+                    style={{
+                      objectPosition:
+                        selectedImage?.objectPosition ?? getVehicleObjectPosition(car.name),
+                    }}
+                    initial={{ opacity: 0, scale: 1.03 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.015 }}
+                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                    onError={() => markImageBroken(selectedImage.src)}
+                  />
+                </AnimatePresence>
+              ) : (
+                <div className="flex aspect-[16/10] items-center justify-center bg-[var(--stone)] text-[11px] uppercase tracking-[0.18em] text-[var(--ink-muted)]">
+                  Image pending
+                </div>
+              )}
             </button>
 
             {gallery.length > 1 && (
               <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
                 {gallery.map((item, index) => {
                   const active = currentImageIndex === index;
+                  if (brokenImages.has(item.src)) return null;
 
                   return (
                     <button
@@ -279,6 +296,7 @@ export default function ProductDetailPage() {
                         alt={`${car.name} thumbnail ${index + 1}`}
                         className="h-full w-full object-cover transition-transform duration-[420ms] ease-[var(--ease-premium)] group-hover:scale-[1.035]"
                         style={{ objectPosition: item.objectPosition }}
+                        onError={() => markImageBroken(item.src)}
                       />
                       <span
                         className={`absolute inset-x-0 bottom-0 h-0.5 transition-colors ${
