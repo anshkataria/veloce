@@ -56,7 +56,6 @@ a {
 .soft-card {
   background: var(--veloce-panel);
   border: 1px solid var(--veloce-border);
-  box-shadow: var(--veloce-shadow);
   border-radius: 8px;
 }
 
@@ -79,15 +78,12 @@ a {
 
 .hover-lift {
   transition:
-    transform 0.28s ease,
-    box-shadow 0.28s ease,
     border-color 0.28s ease,
     background 0.28s ease;
 }
 
 .hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 24px 60px rgba(49, 38, 24, 0.15);
+  border-color: var(--brass-line-strong);
 }
 
 .fade-in-up {

@@ -10,7 +10,6 @@ import {
   Store,
   Menu,
   X,
-  Sparkles,
 } from "lucide-react";
 
 const navItems = [
@@ -79,16 +78,16 @@ export default function AdminLayout() {
                 key={to}
                 to={to}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] transition-all duration-[240ms] ease-[var(--ease-premium)] ${
+                  `flex items-center gap-3 border-l-2 px-3 py-3 text-[13px] transition-colors duration-[240ms] ease-[var(--ease-premium)] ${
                     isActive
-                      ? "bg-[var(--stone)] font-medium text-[var(--oxblood)] shadow-sm"
-                      : "text-[var(--ink-muted)] hover:bg-[var(--stone)]/50 hover:text-[var(--ink)]"
+                      ? "border-[var(--oxblood)] font-medium text-[var(--oxblood)]"
+                      : "border-transparent text-[var(--ink-muted)] hover:text-[var(--ink)]"
                   }`
                 }
               >
                 {({ isActive }) => (
                   <>
-                    {createElement(icon, { size: 16, strokeWidth: isActive ? 2.5 : 2 })}
+                    {createElement(icon, { size: 16, strokeWidth: isActive ? 2.5 : 1.75 })}
                     {label}
                   </>
                 )}
@@ -130,12 +129,6 @@ export default function AdminLayout() {
           </button>
           <div className="flex-1">
             <Breadcrumbs items={breadcrumbItems} />
-          </div>
-          <div className="hidden items-center gap-2 rounded-full border border-[var(--brass-line)] bg-[var(--surface)] px-3 py-1.5 shadow-sm sm:inline-flex">
-            <Sparkles size={14} className="text-[var(--brass)]" />
-            <span className="text-[11px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase">
-              Atelier Control Room
-            </span>
           </div>
           <UserMenu name={user?.name} email={user?.email} onLogout={handleLogout} />
         </header>

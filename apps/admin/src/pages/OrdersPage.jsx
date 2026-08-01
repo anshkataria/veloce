@@ -74,15 +74,15 @@ export default function OrdersPage() {
           subtitle={`${filtered.length} total orders to fulfill.`}
         />
 
-        <div className="flex flex-wrap gap-2 bg-[var(--surface)] p-1.5 rounded-full border border-[var(--veloce-border)] shadow-sm">
+        <div className="flex flex-wrap gap-x-6 gap-y-2 border-b border-[var(--veloce-border)]">
           {["all", ...STATUSES].map((s) => (
             <button
               key={s}
               onClick={() => setFilter(s)}
-              className={`rounded-full px-5 py-2 text-[11px] font-semibold tracking-widest uppercase transition-all duration-[240ms] ease-[var(--ease-premium)] ${
+              className={`-mb-px border-b-2 px-1 pb-3 text-[11px] font-semibold tracking-widest uppercase transition-colors duration-[240ms] ease-[var(--ease-premium)] ${
                 filter === s
-                  ? "bg-[var(--oxblood)] text-[var(--surface)] shadow-md"
-                  : "text-[var(--ink-muted)] hover:text-[var(--ink)]"
+                  ? "border-[var(--oxblood)] text-[var(--oxblood)]"
+                  : "border-transparent text-[var(--ink-muted)] hover:text-[var(--ink)]"
               }`}
             >
               {s.toLowerCase()}

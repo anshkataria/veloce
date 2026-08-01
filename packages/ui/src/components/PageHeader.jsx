@@ -7,7 +7,7 @@ export default function PageHeader({ eyebrow, title, subtitle, action }) {
             {eyebrow}
           </div>
         )}
-        <h1 className="font-display text-3xl font-semibold tracking-wide text-[var(--ink)]">
+        <h1 className="font-display text-4xl font-light tracking-wide text-[var(--ink)]">
           {title}
         </h1>
         {subtitle && (

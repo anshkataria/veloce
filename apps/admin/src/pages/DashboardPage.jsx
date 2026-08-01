@@ -35,34 +35,10 @@ export default function DashboardPage() {
   const customerCount = distinctCustomerCount(orders);
 
   const stats = [
-    {
-      label: "REVENUE",
-      value: formatPrice(totalRevenue),
-      icon: TrendingUp,
-      color: "var(--surface)",
-      colorBg: "var(--ink)",
-    },
-    {
-      label: "ORDERS",
-      value: orders.length,
-      icon: ShoppingBag,
-      color: "var(--ink)",
-      colorBg: "var(--stone)",
-    },
-    {
-      label: "VEHICLES",
-      value: totalCars,
-      icon: Package,
-      color: "var(--surface)",
-      colorBg: "var(--oxblood)",
-    },
-    {
-      label: "CUSTOMERS",
-      value: customerCount,
-      icon: Users,
-      color: "var(--ink)",
-      colorBg: "var(--surface)",
-    },
+    { label: "REVENUE", value: formatPrice(totalRevenue), icon: TrendingUp },
+    { label: "ORDERS", value: orders.length, icon: ShoppingBag },
+    { label: "VEHICLES", value: totalCars, icon: Package },
+    { label: "CUSTOMERS", value: customerCount, icon: Users },
   ];
 
   return (
@@ -82,7 +58,7 @@ export default function DashboardPage() {
       {/* Chart */}
       <div className="soft-card bg-[var(--surface)] border-[var(--veloce-border)] p-8">
         <div className="mb-8 flex items-center justify-between">
-          <h2 className="font-display text-xl font-semibold tracking-wide text-[var(--ink)]">
+          <h2 className="font-display text-xl font-light tracking-wide text-[var(--ink)]">
             Revenue
           </h2>
           <span className="text-[11px] font-medium text-[var(--ink-muted)] tracking-widest uppercase">
@@ -147,7 +123,7 @@ export default function DashboardPage() {
 
       {/* Recent orders */}
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-xl font-semibold tracking-wide text-[var(--ink)]">
+        <h2 className="font-display text-xl font-light tracking-wide text-[var(--ink)]">
           Recent Orders
         </h2>
         <span className="text-[11px] font-medium text-[var(--ink-muted)] tracking-widest uppercase">

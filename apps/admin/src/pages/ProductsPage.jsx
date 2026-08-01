@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2, X, Check, RefreshCw } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { carService } from "../services/carService";
-import { formatPrice, StatusBadge, Pagination, stockStatusMeta } from "@veloce/ui";
+import { formatPrice, StatusBadge, Pagination, DataTable, PageHeader, Button, stockStatusMeta } from "@veloce/ui";
 
 const CATEGORIES = ["SUPERCARS", "SPORTSCARS", "LUXURY"];
 const emptyForm = {
@@ -111,25 +111,16 @@ export default function ProductsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-end justify-between">
-        <div>
-          <div className="mb-2 text-[10px] font-semibold tracking-[0.2em] text-[var(--ink-muted)] uppercase">
-            Private Inventory
-          </div>
-          <h1 className="font-display text-3xl font-semibold tracking-wide text-[var(--ink)]">
-            Products
-          </h1>
-          <p className="mt-2 text-sm text-[var(--ink-muted)]">
-            {totalElements} total vehicles in the collection.
-          </p>
-        </div>
-        <button
-          onClick={openAdd}
-          className="luxury-btn flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold tracking-wide"
-        >
-          <Plus size={16} /> Add Car
-        </button>
-      </div>
+      <PageHeader
+        eyebrow="Private Inventory"
+        title="Products"
+        subtitle={`${totalElements} total vehicles in the collection.`}
+        action={
+          <Button icon={Plus} onClick={openAdd}>
+            Add Car
+          </Button>
+        }
+      />
 
       {isLoading && (
         <div className="py-12 text-center text-sm text-[var(--ink-muted)]">
@@ -144,84 +135,9 @@ export default function ProductsPage() {
       )}
 
       {!isLoading && !isError && (
-        <div className="soft-card overflow-hidden bg-[var(--surface)] border-[var(--veloce-border)]">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b border-[var(--veloce-line)] bg-[var(--stone)]/20">
-                  {[
-                    "Name",
-                    "Brand",
-                    "Category",
-                    "Price",
-                    "Stock",
-                    "Status",
-                    "Actions",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="px-8 py-4 text-[10px] font-semibold tracking-widest text-[var(--ink-muted)] uppercase"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {cars.map((car, i) => {
-                  const s = stockStatusMeta(car.inStock);
-                  return (
-                    <tr
-                      key={car.id}
-                      className={`transition-colors hover:bg-[var(--stone)]/30 ${
-                        i < cars.length - 1
-                          ? "border-b border-[var(--veloce-line)]"
-                          : ""
-                      }`}
-                    >
-                      <td className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap px-8 py-5 text-sm font-semibold tracking-wide text-[var(--ink)]">
-                        {car.name}
-                      </td>
-                      <td className="px-8 py-5 text-sm font-medium text-[var(--ink-muted)]">
-                        {car.brand}
-                      </td>
-                      <td className="px-8 py-5 text-sm font-medium tracking-wide uppercase text-[var(--ink-muted)]">
-                        {car.category}
-                      </td>
-                      <td className="px-8 py-5 text-sm font-semibold tracking-wide text-[var(--ink)]">
-                        {formatPrice(car.price)}
-                      </td>
-                      <td className="px-8 py-5 text-sm font-medium text-[var(--ink-muted)]">
-                        {car.stock}
-                      </td>
-                      <td className="px-8 py-5">
-                        <StatusBadge meta={s} />
-                      </td>
-                      <td className="px-8 py-5">
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => openEdit(car)}
-                            aria-label={`Edit ${car.name}`}
-                            className="rounded-lg p-2 text-[var(--ink-muted)] transition-colors hover:bg-[var(--stone)] hover:text-[var(--ink)]"
-                          >
-                            <Pencil size={16} />
-                          </button>
-                          <button
-                            onClick={() => setDeleteId(car.id)}
-                            aria-label={`Delete ${car.name}`}
-                            className="rounded-lg p-2 text-[var(--ink-muted)] transition-colors hover:bg-[var(--danger-bg)] hover:text-[var(--danger)]"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div className="border-t border-[var(--veloce-line)]">
+        <DataTable
+          columns={["Name", "Brand", "Category", "Price", "Stock", "Status", "Actions"]}
+          footer={
             <Pagination
               page={page}
               totalPages={totalPages}
@@ -229,8 +145,56 @@ export default function ProductsPage() {
               pageSize={PAGE_SIZE}
               onPageChange={setPage}
             />
-          </div>
-        </div>
+          }
+        >
+          {cars.length === 0 ? (
+            <DataTable.Empty colSpan={7}>No vehicles in the collection yet</DataTable.Empty>
+          ) : (
+            cars.map((car, i) => {
+              const s = stockStatusMeta(car.inStock);
+              return (
+                <DataTable.Row key={car.id} isLast={i === cars.length - 1}>
+                  <td className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap px-8 py-5 text-sm font-semibold tracking-wide text-[var(--ink)]">
+                    {car.name}
+                  </td>
+                  <td className="px-8 py-5 text-sm font-medium text-[var(--ink-muted)]">
+                    {car.brand}
+                  </td>
+                  <td className="px-8 py-5 text-sm font-medium tracking-wide uppercase text-[var(--ink-muted)]">
+                    {car.category}
+                  </td>
+                  <td className="px-8 py-5 text-sm font-semibold tracking-wide text-[var(--ink)]">
+                    {formatPrice(car.price)}
+                  </td>
+                  <td className="px-8 py-5 text-sm font-medium text-[var(--ink-muted)]">
+                    {car.stock}
+                  </td>
+                  <td className="px-8 py-5">
+                    <StatusBadge meta={s} />
+                  </td>
+                  <td className="px-8 py-5">
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => openEdit(car)}
+                        aria-label={`Edit ${car.name}`}
+                        className="rounded-lg p-2 text-[var(--ink-muted)] transition-colors hover:bg-[var(--stone)] hover:text-[var(--ink)]"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(car.id)}
+                        aria-label={`Delete ${car.name}`}
+                        className="rounded-lg p-2 text-[var(--ink-muted)] transition-colors hover:bg-[var(--danger-bg)] hover:text-[var(--danger)]"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </DataTable.Row>
+              );
+            })
+          )}
+        </DataTable>
       )}
 
       {/* Add / Edit Modal */}
@@ -238,7 +202,7 @@ export default function ProductsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--ink)]/40 p-4 backdrop-blur-sm">
           <div className="flex max-h-[90vh] w-full max-w-[560px] flex-col gap-6 overflow-y-auto rounded-2xl border border-[var(--veloce-border)] bg-[var(--surface)] p-8 shadow-[var(--veloce-shadow)]">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-2xl font-semibold tracking-wide text-[var(--ink)]">
+              <h2 className="font-display text-2xl font-light tracking-wide text-[var(--ink)]">
                 {editing ? "Edit Car" : "Add Car"}
               </h2>
               <button
@@ -347,24 +311,17 @@ export default function ProductsPage() {
             )}
 
             <div className="mt-4 flex gap-4">
-              <button
-                onClick={() => setShowModal(false)}
-                className="flex-1 rounded-xl border border-[var(--veloce-border)] bg-[var(--surface)] py-3.5 text-sm font-semibold tracking-wide text-[var(--ink-muted)] transition-colors hover:bg-[var(--stone)] hover:text-[var(--ink)]"
-              >
+              <Button variant="secondary" className="flex-1 justify-center" onClick={() => setShowModal(false)}>
                 Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="luxury-btn flex flex-1 items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold tracking-wide disabled:opacity-70"
-              >
+              </Button>
+              <Button className="flex-1 justify-center" onClick={handleSave} disabled={isSaving}>
                 {isSaving ? (
-                  <RefreshCw size={18} className="animate-spin" />
+                  <RefreshCw size={16} className="animate-spin" />
                 ) : (
-                  <Check size={18} />
+                  <Check size={16} />
                 )}
                 {editing ? "Save Changes" : "Add Car"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -374,26 +331,24 @@ export default function ProductsPage() {
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--ink)]/40 p-4 backdrop-blur-sm">
           <div className="flex w-full max-w-[400px] flex-col gap-4 rounded-2xl border border-[var(--veloce-border)] bg-[var(--surface)] p-8 shadow-[var(--veloce-shadow)]">
-            <h2 className="font-display text-2xl font-semibold text-[var(--ink)]">
+            <h2 className="font-display text-2xl font-light text-[var(--ink)]">
               Delete car?
             </h2>
             <p className="text-sm text-[var(--ink-muted)]">
               This action cannot be undone. Are you sure you want to remove this vehicle from the collection?
             </p>
             <div className="mt-4 flex gap-4">
-              <button
-                onClick={() => setDeleteId(null)}
-                className="flex-1 rounded-xl border border-[var(--veloce-border)] py-3 text-sm font-semibold tracking-wide text-[var(--ink-muted)] transition-colors hover:bg-[var(--stone)] hover:text-[var(--ink)]"
-              >
+              <Button variant="secondary" className="flex-1 justify-center" onClick={() => setDeleteId(null)}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
+                className="flex-1 justify-center"
                 onClick={() => deleteMutation.mutate(deleteId)}
                 disabled={deleteMutation.isPending}
-                className="flex-1 rounded-xl bg-[var(--danger)] py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-[var(--danger)]/80 disabled:opacity-70"
               >
                 {deleteMutation.isPending ? "Deleting..." : "Delete"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
