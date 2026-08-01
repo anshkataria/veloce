@@ -51,7 +51,9 @@ public class Car implements Serializable {
     @Builder.Default
     private Boolean isNew = false;
 
-    // main image URL (Cloudinary or S3)
+    // main image URL (Cloudinary or S3) — TEXT since real-world URLs
+    // (especially ones with long query strings) routinely exceed 255 chars
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
 
     @CreationTimestamp
