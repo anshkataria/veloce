@@ -193,7 +193,11 @@ a {
 
 @media (min-width: 1024px) {
   .auth-page {
-    height: calc(100dvh - var(--header-height));
+    /* .auth-page wraps both the sticky header AND .auth-layout below it, so
+       it needs the full viewport height — .auth-layout is the one that
+       subtracts the header, not this outer wrapper (doing it twice clipped
+       the bottom ~56px of the page, cutting off the image overlay copy). */
+    height: 100dvh;
     min-height: 0;
     overflow: hidden;
   }

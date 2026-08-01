@@ -52,10 +52,10 @@ export default function LoginPage() {
           />
           <div className="auth-visual__gradient" />
           <div className="auth-visual__copy">
-            <h2 className="font-display text-4xl font-semibold leading-tight tracking-[0.02em] text-[var(--surface)] sm:text-5xl lg:text-6xl">
+            <h2 className="text-[clamp(1.75rem,1.6vw+1.8vh,2.75rem)] font-semibold leading-tight tracking-[0.02em] text-[var(--surface)]" style={{ fontFamily: "var(--font-display)" }}>
               Atelier control room.
             </h2>
-            <p className="mt-4 text-sm font-medium tracking-widest text-[var(--surface)]/80 uppercase">
+            <p className="mt-3 text-sm font-medium tracking-widest text-[var(--surface)]/80 uppercase">
               Private Operations Access
             </p>
           </div>
