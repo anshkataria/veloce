@@ -34,11 +34,11 @@ Playwright) running in CI.
 
 ## ✨ Features
 
-| App | What it does |
-| --- | --- |
-| **Storefront** | Browse and search the catalog, cart, Stripe-hosted checkout, order history and tracking |
-| **Admin** | Inventory CRUD, live order queue via SSE, order status management, dashboard metrics |
-| **API** | JWT auth (`CUSTOMER` / `ADMIN`), server-priced orders, inventory locking, Stripe webhooks, async email, Redis caching |
+| App            | What it does                                                                                                          |
+| -------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Storefront** | Browse and search the catalog, cart, Stripe-hosted checkout, order history and tracking                               |
+| **Admin**      | Inventory CRUD, live order queue via SSE, order status management, dashboard metrics                                  |
+| **API**        | JWT auth (`CUSTOMER` / `ADMIN`), server-priced orders, inventory locking, Stripe webhooks, async email, Redis caching |
 
 ## 📸 Screenshots
 
@@ -96,14 +96,14 @@ changes.
 
 ## 🧰 Tech stack
 
-| Layer | Stack |
-| --- | --- |
-| **Storefront & admin** | React 19, Vite, React Router, TanStack Query, Zustand, Tailwind CSS |
-| **Backend** | Java 21, Spring Boot 4, Spring Security, Spring Data JPA |
-| **Data** | PostgreSQL 16, Redis 7 |
-| **Integrations** | Stripe Checkout, SMTP/Mailpit, Server-Sent Events, OpenAPI/Swagger |
-| **Quality** | JUnit 5, Mockito, Testcontainers, Vitest, React Testing Library, Playwright |
-| **Infra** | npm workspaces monorepo, shared `@veloce/ui` package, multi-stage Docker images, GitHub Actions CI |
+| Layer                  | Stack                                                                                              |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| **Storefront & admin** | React 19, Vite, React Router, TanStack Query, Zustand, Tailwind CSS                                |
+| **Backend**            | Java 21, Spring Boot 4, Spring Security, Spring Data JPA                                           |
+| **Data**               | PostgreSQL 16, Redis 7                                                                             |
+| **Integrations**       | Stripe Checkout, SMTP/Mailpit, Server-Sent Events, OpenAPI/Swagger                                 |
+| **Quality**            | JUnit 5, Mockito, Testcontainers, Vitest, React Testing Library, Playwright                        |
+| **Infra**              | npm workspaces monorepo, shared `@veloce/ui` package, multi-stage Docker images, GitHub Actions CI |
 
 ## 🚀 Getting started
 
@@ -203,3 +203,7 @@ the regular `test:e2e` / CI run.
 - Secrets and allowed origins are environment-configured.
 - Local JWT and database defaults exist only for developer convenience; use generated
   secrets and managed credentials in deployment.
+
+## Note
+
+Generative AI tools were used to guide the project.
